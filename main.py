@@ -76,6 +76,7 @@ def is_existing_user(user_id: int) -> bool:
 
 #Dictionary of Tasks
 TASK_DICT = {
+    0: "To cross out what I've become",
     1: "I walk a lonely road\, The only one that I have ever known\. Don't know where it goes\, But it's home to me\, and I walk alone",
     2: "I walk this empty street\, On the Boulevard of Broken Dreams\. Where the city sleeps\, And I'm the only one\, and I walk alone",
     3: "I walk alone\, I walk alone\, I walk alone\, and I walk a—",
@@ -91,17 +92,6 @@ TASK_DICT = {
     13: "What I've done\, I'll face myself To cross out what I've become Erase myself And let go of what I've done",
     14: "For what I've done\, I start again And whatever pain may come Today this ends I'm forgiving what I've",
     15: "Done\, I'll face myself",
-    16: "To cross out what I've become",
-    17: "Erase myself",
-    18: "And let go of what I've done",
-    19: "You can't just come into my life\, make me feel wanted for once\, and then leave",
-    20: "According to all known laws of aviation\, there is no way that a bee should be able to fly\. Its wings are too small to get its fat little body off the ground\.",
-    21: "It is a truth universally acknowledged\, that a single man in posession of a good fortune\, must be in want of a waifu",
-    22: "Idk why I'm spending 15 minutes typing out random quotes and lyrics when I have to replace this soon with the actual task descriptions",
-    23: "And that's how you turn a 5 hour task into a one and a half month task\. Because I'm a programmer\, and that's what we do\.",
-    24: "I'm kinda done with being happy for other people when I can't even be happy with myself\.",
-    25: "Somebody once told me the world was gonna roll me\."
-
 }
 
 #Dictionary of answers
@@ -168,13 +158,13 @@ NO_BUTTON_CALLBACK = "final_n"
 
 #####################################  Functions  #################################
 def has_two_bingos(completed_task_ids: set[int]) -> bool:
-    # Initialize a 5×5 grid of 0s
-    grid = [[0 for _ in range(5)] for _ in range(5)]
+    # Initialize a 4x4 grid of 0s
+    grid = [[0 for _ in range(4)] for _ in range(4)]
 
     # Fill in completed tasks
     for task_id in completed_task_ids:
-        row = (task_id) // 5
-        col = (task_id) % 5
+        row = (task_id) % 4
+        col = (task_id) % 4
         grid[row][col] = 1
 
     bingo_count = 0
@@ -185,16 +175,16 @@ def has_two_bingos(completed_task_ids: set[int]) -> bool:
             bingo_count += 1
 
     # Check columns
-    for col in range(5):
-        if all(grid[row][col] == 1 for row in range(5)):
+    for col in range(4):
+        if all(grid[row][col] == 1 for row in range(4)):
             bingo_count += 1
 
     # Check main diagonal
-    if all(grid[i][i] == 1 for i in range(5)):
+    if all(grid[i][i] == 1 for i in range(4)):
         bingo_count += 1
 
     # Check anti-diagonal
-    if all(grid[i][4-i] == 1 for i in range(5)):
+    if all(grid[i][3-i] == 1 for i in range(4)):
         bingo_count += 1
 
     return bingo_count >= 2
@@ -209,17 +199,17 @@ def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     args: 
     activity_list : one-dimensional list of tuples (task number , bool representing completed or incompleted task)
 
-    generates a 5x5 grid of buttons with a final row at the bottom for a back button.
+    generates a 4x4 grid of buttons with a final row at the bottom for a back button.
     """
     grid = []
     row = []
-    for i in range(25): 
+    for i in range(16): 
         callback_data="bingo_" + str(i) #Callback data (i.e update.callback_query.data = callback_data)
         if activity_list[i][1]:
             row.append(InlineKeyboardButton("✅", callback_data=callback_data))
         else:
             row.append(InlineKeyboardButton(activity_list[i][0], callback_data=callback_data))
-        if (i+1) % 5 == 0:
+        if (i+1) % 4 == 0:
             grid.append(row)
             row = []
     row.append(InlineKeyboardButton("Back", callback_data=MAIN_MENU_CALLBACK))
@@ -281,12 +271,11 @@ def generate_question(question_num) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(grid)
 
 ########################################  Decorators  #######################################33
-def disable_if_in_state(state):
+def enable_if_in_state(state):
     """
-
     Decorator function that prevents the decorated function from being triggered. 
     Applied to Command Handlers (/start , /menu and /help), such that they can only be used
-    when not in the "submitting_task" state or the "taking_quiz" state, which is the "all_enabled" state.
+    when not in the "submitting_task" state or the "taking_quiz" state, which is the "in_menu" state.
 
     Applied also to the handle_media Callback Handler such that users will not trigger it by sending media files.
     handle_media function can only be called when in the "submitting_task" state.
@@ -294,14 +283,27 @@ def disable_if_in_state(state):
     """
     def decorator(func):
         async def wrapper(update, context, *args, **kwargs):
-            if context.user_data.get('state') == state:
-                await update.message.reply_text("This command is currently disabled.")
+            message = "You cannot use that command right now"
+            current_state = context.user_data.get('state') 
+            if current_state != state:
+                if current_state == 'submitting_task':
+                    pass
+                elif current_state == 'in_menu':
+                    message = "Submit your proof of completion in the respective task page on the bingo board"
+                elif current_state == 'taking_quiz' and state == "submitting_task":
+                    message = "Why are you uploading media in the middle of an exam"
+
+                if update.message:
+                        await update.message.reply_text(message)
+                elif update.callback_query:
+                    await update.callback_query.answer(message, show_alert=True)
                 return
+
             return await func(update, context, *args, **kwargs)
         return wrapper
     return decorator
 
-def rate_limit(cooldown_seconds: int = 15, message: str = "Please wait a few seconds before trying again."):
+def rate_limit(cooldown_seconds: int = 3, message: str = "Please wait a few seconds before trying again."):
     """
     Decorator to rate-limit a telegram handler per user.
     """
@@ -329,9 +331,6 @@ def rate_limit(cooldown_seconds: int = 15, message: str = "Please wait a few sec
     return decorator
 
 
-
-
-
 # Build keyboards
 
 MAIN_MENU_MARKUP = InlineKeyboardMarkup([
@@ -353,7 +352,7 @@ READY_MENU_MARKUP = InlineKeyboardMarkup([
 
 
 ##################################  Commands  #################################
-
+@enable_if_in_state("in_menu")
 @rate_limit(cooldown_seconds=3)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -370,7 +369,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #Initializing context variables
     context.user_data['completed_bingo'] = False #Sets as false, main menu will display first version
     context.user_data['quiz_answers'] = ""
-    context.user_data['state'] = "all_enabled" 
+    context.user_data['state'] = "in_menu" 
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
@@ -383,15 +382,17 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU)
 
-    
+@enable_if_in_state("in_menu")
 @rate_limit()
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(FAQ_TEXT)
 
+@enable_if_in_state("in_menu")
 @rate_limit()
 async def display_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_photo(photo="./xdd.gif")
 
+@enable_if_in_state("in_menu")
 @rate_limit()
 async def menu_command(update: Update, context: CallbackContext) -> None:
     check_completed = context.user_data.get('completed_bingo')
@@ -409,7 +410,7 @@ async def menu_command(update: Update, context: CallbackContext) -> None:
 
 
 ##################################  Handlers  #################################
-
+@enable_if_in_state("submitting_task")
 async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Function that handles the user uploading their document proof (in a valid file type) to the bot. 
@@ -496,6 +497,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     
     #handles when the user finishes the bingo and is prompted if they wish to take the quiz now
     if data == "final_y": #generates first question
+        context.user_data['state'] = "taking_quiz"
         text = "First question: Which is your favourite?"
         markup = generate_question(1)
     elif data == "final_n": #prompts them to return to the main menu
@@ -517,7 +519,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
             markup = MAIN_MENU_COMP_MARKUP
             
             admin_caption += context.user_data['quiz_answers']
-            context.user_data['state'] = 'AllEnabled'
+            context.user_data['state'] = 'in_menu'
             await context.bot.send_message(
                 chat_id=admin_user_id,
                 text=admin_caption,
@@ -545,16 +547,19 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     if data == MAIN_MENU_CALLBACK:
     # when user presses any button that leads back to the main menu
         text = MAIN_MENU
+        context.user_data['state'] = 'in_menu'
         if context.user_data['completed_bingo']:
             markup = MAIN_MENU_COMP_MARKUP
         else:
             markup = MAIN_MENU_MARKUP
     elif data == FAQ_BUTTON_CALLBACK:
     # when user presses "FAQ / queries button in the main menu"
+        context.user_data['state'] = 'in_menu'
         text = FAQ_TEXT
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
     elif data == RULES_BUTTON_CALLBACK:
     # when user presses "View Rules" button in the main menu
+        context.user_data['state'] = 'in_menu'
         text = RULES_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
     elif data == SUBMISSION_CALLBACK:
@@ -575,7 +580,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
         context.user_data['task_id'] = task_id  
-        task_description = TASK_DICT[task_id+1]
+        task_description = TASK_DICT[task_id]
         text = str(task_id) + ": " + task_description
         markup = generate_task_page(task_id)
 
