@@ -1,3 +1,5 @@
+# my_user_id = 508617756
+
 # async def menu_command(update: Update, context: CallbackContext) -> None:
 #     """
 #     Command triggered by '/menu'

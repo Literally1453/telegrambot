@@ -4,11 +4,15 @@ from telegram.error import BadRequest
 from telegram.ext import Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
 import sqlite3
 from datetime import datetime
+import time
+import functools
 import os
+from dotenv import load_dotenv
 
-token = os.getenv("TOKEN")
-bot_username = os.getenv("BOT_USERNAME")
-admin_user_id = 508617756
+load_dotenv()
+token = os.getenv('TOKEN')
+bot_username = os.getenv('BOT_USERNAME')
+admin_user_id = -4960233673
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".mp4", ".mov"}
 
 ##################################  Database Code  #################################
@@ -198,13 +202,7 @@ def has_two_bingos(completed_task_ids: set[int]) -> bool:
 def is_valid(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in VALID_EXTENSIONS)
 
-def get_task_list() -> list:
-    list = []
-    alphstr = 'abcdefghijklmnopqrstuvwxy'
-    for ch in range(25):
-        list.append((alphstr[ch],False))
-    
-    return list
+
         
 def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     """
@@ -282,8 +280,18 @@ def generate_question(question_num) -> InlineKeyboardMarkup:
         
     return InlineKeyboardMarkup(grid)
 
-#Decorator Function
+########################################  Decorators  #######################################33
 def disable_if_in_state(state):
+    """
+
+    Decorator function that prevents the decorated function from being triggered. 
+    Applied to Command Handlers (/start , /menu and /help), such that they can only be used
+    when not in the "submitting_task" state or the "taking_quiz" state, which is the "all_enabled" state.
+
+    Applied also to the handle_media Callback Handler such that users will not trigger it by sending media files.
+    handle_media function can only be called when in the "submitting_task" state.
+    
+    """
     def decorator(func):
         async def wrapper(update, context, *args, **kwargs):
             if context.user_data.get('state') == state:
@@ -292,6 +300,37 @@ def disable_if_in_state(state):
             return await func(update, context, *args, **kwargs)
         return wrapper
     return decorator
+
+def rate_limit(cooldown_seconds: int = 15, message: str = "Please wait a few seconds before trying again."):
+    """
+    Decorator to rate-limit a telegram handler per user.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(update, context, *args, **kwargs):
+            user_id = update.effective_user.id
+            now = time.time()
+
+            last_action = context.user_data.get('last_action_time', 0)
+
+            if now - last_action < cooldown_seconds:
+                # Too soon
+                if update.message:
+                    await update.message.reply_text(message)
+                elif update.callback_query:
+                    await update.callback_query.answer(message, show_alert=True)
+                return
+
+            # Allowed
+            context.user_data['last_action_time'] = now
+            return await func(update, context, *args, **kwargs)
+
+        return wrapper
+    return decorator
+
+
+
+
 
 # Build keyboards
 
@@ -307,7 +346,6 @@ MAIN_MENU_COMP_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(QUIZ_COMP_BUTTON, callback_data=QUIZ_COMP_BUTTON_CALLBACK), 
     InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
 ])
-BINGO_MENU_MARKUP = generate_bingo_board(get_task_list())
 READY_MENU_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
     [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
@@ -315,6 +353,8 @@ READY_MENU_MARKUP = InlineKeyboardMarkup([
 
 
 ##################################  Commands  #################################
+
+@rate_limit(cooldown_seconds=3)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     """
@@ -330,7 +370,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #Initializing context variables
     context.user_data['completed_bingo'] = False #Sets as false, main menu will display first version
     context.user_data['quiz_answers'] = ""
-    context.user_data['state'] = "AllEnabled" 
+    context.user_data['state'] = "all_enabled" 
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
@@ -344,13 +384,15 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU)
 
     
-
+@rate_limit()
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(FAQ_TEXT)
 
+@rate_limit()
 async def display_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_photo(photo="./xdd.gif")
 
+@rate_limit()
 async def menu_command(update: Update, context: CallbackContext) -> None:
     check_completed = context.user_data.get('completed_bingo')
     markup = ""
@@ -373,29 +415,44 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Function that handles the user uploading their document proof (in a valid file type) to the bot. 
     The bot will check that it is of an acceptable file type and size, before forwarding it to the admin 
     for verification with "Approve or Reject" prompt buttons.
-
     """
-    original_user_id = update.effective_user.id
-    file_id = update.message.document.file_id
+
+    original_user_id = update.effective_user.id #user_id of sender
     task_id = context.user_data.get('task_id')    
+    if update.message.document != None:
+        print(update.message.document.file_id)
+        file_id = update.message.document.file_id
+    elif update.message.photo != None:
+        print(update.message.photo)
+    elif update.message.video != None:
+        print(update.message.video)
+
     print(task_id)
     sender_chat_info = await context.bot.getChat(update.message.chat.id)
     caption = sender_chat_info['username'] + " completing Task " + str(task_id) + " Approve or reject"
     file_name = None
 
     if update.message.photo:
+        print("testing photo")
         file_id = update.message.photo[-1].file_id
         file_name = "photo.jpg"  # Telegram photos have no name, assume jpeg
+        await context.bot.send_photo(chat_id=admin_user_id, photo=file_id)
     elif update.message.video:
+        print("testing video")
         file_id = update.message.video.file_id
         mime = update.message.video.mime_type
         if mime == "video/mp4":
             file_name = "video.mp4"
         elif mime == "video/quicktime":
             file_name = "video.mov"
+        await context.bot.send_video(chat_id=admin_user_id, video=file_id)
+
     elif update.message.document:
+        print("testing document")
         file_id = update.message.document.file_id
         file_name = update.message.document.file_name
+        await context.bot.send_document(chat_id=admin_user_id, document=file_id)
+
 
     buttons = [
         [
@@ -411,14 +468,12 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
 
     if file_id and file_name and is_valid(file_name):
-        
-        await context.bot.send_document(chat_id=admin_user_id, document=file_id)
+        print("passed true")
         await context.bot.send_message(
             admin_user_id,
             caption,
             parse_mode = ParseMode.MARKDOWN_V2,
             reply_markup=InlineKeyboardMarkup(buttons))
-    
     else:
         await update.message.reply_text("Invalid file type. Please send a JPEG, PNG, MP4, or MOV.")
 
@@ -488,34 +543,41 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     markup = None
 
     if data == MAIN_MENU_CALLBACK:
+    # when user presses any button that leads back to the main menu
         text = MAIN_MENU
         if context.user_data['completed_bingo']:
             markup = MAIN_MENU_COMP_MARKUP
         else:
             markup = MAIN_MENU_MARKUP
     elif data == FAQ_BUTTON_CALLBACK:
+    # when user presses "FAQ / queries button in the main menu"
         text = FAQ_TEXT
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
     elif data == RULES_BUTTON_CALLBACK:
+    # when user presses "View Rules" button in the main menu
         text = RULES_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
-    elif "bingo" in data:
-        task_id = int(data.split("_")[1])
-        context.user_data['task_id'] = task_id  #Storing the task_id int as a variable
-        task_description = TASK_DICT[task_id+1]
-        text = str(task_id) + ": " + task_description
-        markup = generate_task_page(task_id)
     elif data == SUBMISSION_CALLBACK:
+    # when user clicks on "Submit for Completion" button in the individual task page
+        context.user_data['state'] = "submitting_task"
         task_id = context.user_data['task_id']
         text = SUBMISSION_MENU
         markup = generate_submission_page(task_id)
     elif data == QUIZ_COMP_BUTTON_CALLBACK:
+    # when user clicks on "Solve Mystery" button in the main menu (after bingo has been achieved)
         text = QUIZ_COMP_MENU
         markup = READY_MENU_MARKUP
     elif data == QUIZ_INCOMP_BUTTON_CALLBACK:
+    # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
         text = QUIZ_INCOMP_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
-        
+    elif "bingo" in data:
+    # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
+        task_id = int(data.split("_")[1])
+        context.user_data['task_id'] = task_id  
+        task_description = TASK_DICT[task_id+1]
+        text = str(task_id) + ": " + task_description
+        markup = generate_task_page(task_id)
 
     # Close the query to end the client-side loading animation
     await update.callback_query.answer()
@@ -530,7 +592,10 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
 
 async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     """
-    triggers when a bingo_board is called to be generated
+    triggers when a bingo_board is called to be generated. Takes the requesting user_id and calls get_user_tasks
+    which returns a list of the 25 tasks of the user. It then calls generate_bingo_board with the list as an argument.
+
+    It then edits the text of the last message to reflect the updated bingo board
     """
     user_id = update.effective_user.id
 
