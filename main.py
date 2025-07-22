@@ -7,6 +7,7 @@ from datetime import datetime
 import time
 import functools
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -115,13 +116,12 @@ FAQ_TEXT = "PM @malfn19 for any questions \/ issues that you are facing\. Techni
 # Pre-assign menu text
 START_MENU = "Welcome to event thing. Type /menu to go to the main menu. Or type /hahaha because nothing bad ever comes from following the instructions of a bot."
 MAIN_MENU = "This is the main menu\. Click on anything you like\!"
-BINGO_MENU = "Complete the bingo\! \(Vertical, Horizontal or Diagonal\)"
-SUBMISSION_MENU = "Now you can upload the image\! Please upload as a document or I will be filing for damages\."
+BINGO_MENU = "Complete 2 bingos\! \(Vertical, Horizontal or Diagonal\)"
+SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to take the quiz?"
 QUIZ_INCOMP_MENU = "You aren't supposed to be here\. Do not move\. They will be here shortly\."
 RULES_MENU = "1\. Do not talk about the fight club\. \n 2\. Cereal Before Milk \n 3\. Submitting TikTok brainrot will result in a permanent ban and suspension of SMUX membership\. \n 4\. Images displaying unsafe practices will be rejected\."
-
-# Pre-assign button text
+FINALE_MENU = "Wahoo you're done, good job and all, follow us on here here and here, and remember, it's just a theory, a GAME THEORY"
 
 #Main Menu Buttons
 
@@ -154,8 +154,31 @@ YES_BUTTON_CALLBACK = "final_y"
 NO_BUTTON = "What mystery?"
 NO_BUTTON_CALLBACK = "final_n"
 
-#MCQ Answers
+#Finale Button
+FINALE_BUTTON = "Finale"
+FINALE_BUTTON_CALLBACK = 'finale'
 
+####################################### CONSTANT MARKUPS ################################################
+
+MAIN_MENU_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+    [InlineKeyboardButton(QUIZ_INCOMP_BUTTON, callback_data=QUIZ_INCOMP_BUTTON_CALLBACK), 
+    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+])
+MAIN_MENU_COMP_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+    [InlineKeyboardButton(QUIZ_COMP_BUTTON, callback_data=QUIZ_COMP_BUTTON_CALLBACK), 
+    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+])
+READY_MENU_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
+    [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
+]) 
+FINALE_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(FINALE_BUTTON, callback_data=FINALE_BUTTON_CALLBACK)]
+]) 
 #####################################  Functions  #################################
 def has_two_bingos(completed_task_ids: set[int]) -> bool:
     # Initialize a 4x4 grid of 0s
@@ -192,8 +215,18 @@ def has_two_bingos(completed_task_ids: set[int]) -> bool:
 def is_valid(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in VALID_EXTENSIONS)
 
+def clean_username_input(username: str) -> str:
+    """
+    Escapes characters in a username string so it can be safely used
+    with Telegram's MarkdownV2 parse mode.
+    """
+    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
+    return re.sub(
+        fr"([{re.escape(escape_chars)}])",
+        r"\\\1",
+        username
+    )
 
-        
 def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     """
     args: 
@@ -205,10 +238,10 @@ def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     row = []
     for i in range(16): 
         callback_data="bingo_" + str(i) #Callback data (i.e update.callback_query.data = callback_data)
-        if activity_list[i][1]:
+        if activity_list[i][1]: #If status == True i.e. task has been completed
             row.append(InlineKeyboardButton("✅", callback_data=callback_data))
-        else:
-            row.append(InlineKeyboardButton(activity_list[i][0], callback_data=callback_data))
+        else: 
+            row.append(InlineKeyboardButton(activity_list[i][0]+1, callback_data=callback_data))
         if (i+1) % 4 == 0:
             grid.append(row)
             row = []
@@ -223,7 +256,7 @@ def generate_task_page(task_id) -> InlineKeyboardMarkup:
         previous_task_callback = "bingo_" + str(task_id-1)
         row.append(InlineKeyboardButton("Previous Task",callback_data=previous_task_callback))
 
-    if task_id != 24:
+    if task_id != 15:
         next_task_callback = "bingo_" + str(task_id+1)
         row.append(InlineKeyboardButton("Next Task",callback_data=next_task_callback))
     grid.append(row)
@@ -331,28 +364,8 @@ def rate_limit(cooldown_seconds: int = 3, message: str = "Please wait a few seco
     return decorator
 
 
-# Build keyboards
-
-MAIN_MENU_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-    [InlineKeyboardButton(QUIZ_INCOMP_BUTTON, callback_data=QUIZ_INCOMP_BUTTON_CALLBACK), 
-    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-])
-MAIN_MENU_COMP_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-    [InlineKeyboardButton(QUIZ_COMP_BUTTON, callback_data=QUIZ_COMP_BUTTON_CALLBACK), 
-    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-])
-READY_MENU_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
-    [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
-]) 
-
-
 ##################################  Commands  #################################
-@enable_if_in_state("in_menu")
+#@enable_if_in_state("in_menu")
 @rate_limit(cooldown_seconds=3)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -373,12 +386,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
-        for i in range(25):
+        for i in range(16):
             set_task_status(user_id,i,False)
-
-    default_caption = "Hi, I'm testing a bot. " \
-    "If you're seeing this, it means I'm either working on it right now or I left it running. " \
-    "Anyway, type /hahaha to see the cool thing I coded."
 
     await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU)
 
@@ -417,64 +426,53 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     The bot will check that it is of an acceptable file type and size, before forwarding it to the admin 
     for verification with "Approve or Reject" prompt buttons.
     """
-
-    original_user_id = update.effective_user.id #user_id of sender
-    task_id = context.user_data.get('task_id')    
-    if update.message.document != None:
-        print(update.message.document.file_id)
-        file_id = update.message.document.file_id
-    elif update.message.photo != None:
-        print(update.message.photo)
-    elif update.message.video != None:
-        print(update.message.video)
-
-    print(task_id)
     sender_chat_info = await context.bot.getChat(update.message.chat.id)
-    caption = sender_chat_info['username'] + " completing Task " + str(task_id) + " Approve or reject"
+    user_id = update.effective_user.id #user_id of sender
+    username = sender_chat_info['username']
+    task_id = context.user_data.get('task_id')    
+    file_id = None
     file_name = None
+    file_type = None
 
     if update.message.photo:
-        print("testing photo")
         file_id = update.message.photo[-1].file_id
-        file_name = "photo.jpg"  # Telegram photos have no name, assume jpeg
-        await context.bot.send_photo(chat_id=admin_user_id, photo=file_id)
+        file_name = "photo.jpg"  
+        file_type = "photo"
     elif update.message.video:
-        print("testing video")
         file_id = update.message.video.file_id
         mime = update.message.video.mime_type
+        file_type = "video"
         if mime == "video/mp4":
             file_name = "video.mp4"
         elif mime == "video/quicktime":
             file_name = "video.mov"
-        await context.bot.send_video(chat_id=admin_user_id, video=file_id)
-
     elif update.message.document:
         print("testing document")
         file_id = update.message.document.file_id
         file_name = update.message.document.file_name
-        await context.bot.send_document(chat_id=admin_user_id, document=file_id)
+        file_type = "document"
 
+    buttons = [[
+            InlineKeyboardButton(APPROVE_BUTTON, callback_data=f"approve:{user_id}:{username}"),
+            InlineKeyboardButton(REJECT_BUTTON, callback_data=f"reject:{user_id}:{username}"),
+        ]]
 
-    buttons = [
-        [
-            InlineKeyboardButton(
-                "Approve",
-                callback_data=f"approve:{original_user_id}"
-            ),
-            InlineKeyboardButton(
-                "Reject",
-                callback_data=f"reject:{original_user_id}"
-            ),
-        ]
-    ]
-
+    caption = "@" + clean_username_input(username) + " completing Task " + str(task_id) + " Approve or reject"
     if file_id and file_name and is_valid(file_name):
         print("passed true")
+        if file_type == 'photo':
+            await context.bot.send_photo(chat_id=admin_user_id, photo=file_id)
+        elif file_type == 'video':
+            await context.bot.send_video(chat_id=admin_user_id, video=file_id)
+        elif file_type == 'document':
+            await context.bot.send_document(chat_id=admin_user_id, document=file_id)
         await context.bot.send_message(
             admin_user_id,
             caption,
             parse_mode = ParseMode.MARKDOWN_V2,
             reply_markup=InlineKeyboardMarkup(buttons))
+        await update.message.reply_text("Thanks for your submission! It is now pending approval by our admin")
+
     else:
         await update.message.reply_text("Invalid file type. Please send a JPEG, PNG, MP4, or MOV.")
 
@@ -501,7 +499,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
         text = "First question: Which is your favourite?"
         markup = generate_question(1)
     elif data == "final_n": #prompts them to return to the main menu
-        text = "Redirect to main menu"
+        text = MAIN_MENU
         markup = MAIN_MENU_COMP_MARKUP
     else: # handles when the user is submitting their MCQ responses to the 3 questions
         ans_id = int(data.split("_")[1])
@@ -516,7 +514,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
         elif ans_id in [9,10,11,12]: #third answer:
             context.user_data['quiz_answers'] += "Q3: " + str(ans_id)
             text = "How nice\. I could never feel\. I'm nothing but binary, I'm not alive, because I simply am not\. But congrats on finishing this event\!"
-            markup = MAIN_MENU_COMP_MARKUP
+            markup = FINALE_MARKUP
             
             admin_caption += context.user_data['quiz_answers']
             context.user_data['state'] = 'in_menu'
@@ -537,7 +535,9 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
 
 async def button_tap(update: Update, context: CallbackContext) -> None:
     """
-    This handler processes the inline buttons on the menu
+    This handler processes the inline buttons on the menu. Handles the main menu buttons, the bingo tiles buttons,
+    and the task submission buttons
+
     """
     data = update.callback_query.data # This is the callback_data for whatever button that was pressed
     print(data)
@@ -576,46 +576,42 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
         text = QUIZ_INCOMP_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+    elif data == FINALE_BUTTON_CALLBACK:
+        text = FINALE_MENU
+        markup = MAIN_MENU_MARKUP
     elif "bingo" in data:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
         context.user_data['task_id'] = task_id  
         task_description = TASK_DICT[task_id]
-        text = str(task_id) + ": " + task_description
+        text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(task_id)
 
-    # Close the query to end the client-side loading animation
     await update.callback_query.answer()
-
-    # Update message content with corresponding menu section
     await update.callback_query.message.edit_text(
         text,
         parse_mode = ParseMode.MARKDOWN_V2,
         reply_markup=markup,
-        
     )
 
 async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     """
-    triggers when a bingo_board is called to be generated. Takes the requesting user_id and calls get_user_tasks
-    which returns a list of the 25 tasks of the user. It then calls generate_bingo_board with the list as an argument.
+    Triggers when a bingo_board is called to be generated. Takes the requesting user_id and calls get_user_tasks
+    which returns a list of the 16 tasks of the user. It then calls generate_bingo_board with the list as an argument.
 
     It then edits the text of the last message to reflect the updated bingo board
     """
     user_id = update.effective_user.id
 
-    task_list = get_user_tasks(user_id)
+    task_list = get_user_tasks(user_id) #gets a list of the tasks with status (complete or not) from database
     text = BINGO_MENU
     markup = generate_bingo_board(task_list)
-    # Close the query to end the client-side loading animation
-    await update.callback_query.answer()
 
-    # Update message content with corresponding menu section
+    await update.callback_query.answer()
     await update.callback_query.message.edit_text(
         text,
         parse_mode = ParseMode.MARKDOWN_V2,
         reply_markup=markup,
-        
     )
 
 ##################################  Admin Responses  #################################
@@ -627,26 +623,33 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     This will send a message to the user, then update the task completion state (SQL shenanigans),
     which will change the menu.
     """
-
-    #print(f"Handle approval function triggered by {update.message.chat.id}")
     completed = False
     query = update.callback_query
     task_id = context.user_data.get('task_id')    
     await query.answer()  # acknowledge
 
     data = query.data  # e.g. "approve:123456789"
-    action, user_id_str = data.split(":")
+    action, user_id_str , username = data.split(":")
     user_id = int(user_id_str)
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
 
     if action == "approve":
         text = "Your task was approved!"
         set_task_status(user_id,task_id,True,)
+        admin_text =f"You approved @{clean_username_input(username)} task number {task_id}" 
         completed_tasks = get_completed_task_ids(user_id)
-        if len(completed_tasks) >= 9 and has_two_bingos(completed_tasks):
+        print("L641 Completed Tasks")
+        print(completed_tasks)
+        if len(completed_tasks) >= 7 and has_two_bingos(completed_tasks):
             completed = True
     else:
         text = "Your task was rejected."
+        admin_text =f"You rejected @{clean_username_input(username)} task number {task_id}" 
+
+    await query.edit_message_text(
+        text=admin_text,
+        parse_mode=ParseMode.MARKDOWN_V2
+    )
 
     # Send message back to User A
     
@@ -662,10 +665,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=text,
                 reply_markup=markup
             )
-
         
-async def error_handling(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(f'Update {Update} caused error {context.error}')
 
 
 ###################################  Main  ################################## 
@@ -685,8 +685,6 @@ if __name__ == '__main__':
     app.add_handler(CallbackQueryHandler(handle_question, pattern =r"^(final|ans)_"))
     app.add_handler(CallbackQueryHandler(handle_approval, pattern=r"^(approve|reject):"))
     app.add_handler(CallbackQueryHandler(handle_bingo_board, pattern=r"generate_bingo"))
-
-
 
     app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO | filters.Document.ALL, handle_media))
 
