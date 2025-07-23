@@ -15,6 +15,8 @@ token = os.getenv('TOKEN')
 bot_username = os.getenv('BOT_USERNAME')
 admin_user_id = -4960233673
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".mp4", ".mov"}
+port = int(os.environ.get("PORT", 8000))
+
 
 ##################################  Database Code  #################################
 DB_PATH = 'bot_tasks.db'
@@ -673,6 +675,11 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     print("Starting bot...")
     app = Application.builder().token(token).build()
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
+        webhook_url=os.environ["WEBHOOK_URL"]
+    )
     init_db()
 
     #Commands
