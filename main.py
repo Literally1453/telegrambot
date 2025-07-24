@@ -764,15 +764,11 @@ def main():
 
 
     print("Starting bot via webhook...")
-    telegram_app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000)),
-        webhook_url=os.environ["WEBHOOK_URL"],
-    )
 
 if __name__ == '__main__':
     main()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    print("Listening...")
 
 
     
