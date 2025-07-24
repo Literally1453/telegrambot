@@ -768,7 +768,6 @@ def main():
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8000)),
         webhook_url=os.environ["WEBHOOK_URL"],
-        webhook_path="/hook"
     )
 
 if __name__ == '__main__':
