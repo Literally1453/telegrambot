@@ -1,7 +1,7 @@
 from telegram import Bot, Update, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, InputMedia, Chat, Message
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import Dispatcher, Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
+from telegram.ext import Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
 from flask import Flask, request
 from datetime import datetime
 import time
@@ -23,12 +23,13 @@ database = os.environ.get("DB_NAME")
 hostname = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
 app = Flask(__name__)
-dispatcher = Dispatcher(Bot, update_queue=None, workers=0, use_context=True)
+telegram_app = Application.builder().token(token).build()
 
 @app.route("/hook", methods=["POST"])
-def webhook():
+async def webhook():
     update = Update.de_json(request.get_json(force=True), Bot)
-    dispatcher.process_update(update)
+    await telegram_app.process_update(update)
+
     return "ok", 200
 
 ##################################  Database Code  #################################
@@ -748,24 +749,22 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     init_db()
 
-    app = Application.builder().token(token).build()
-    
     #Commands
-    app.add_handler(CommandHandler('start', start_command))
-    app.add_handler(CommandHandler('help', help_command))
-    app.add_handler(CommandHandler('hahaha', display_command))
-    app.add_handler(CommandHandler('menu', menu_command))
+    telegram_app.add_handler(CommandHandler('start', start_command))
+    telegram_app.add_handler(CommandHandler('help', help_command))
+    telegram_app.add_handler(CommandHandler('hahaha', display_command))
+    telegram_app.add_handler(CommandHandler('menu', menu_command))
 
-    app.add_handler(CallbackQueryHandler(button_tap, pattern=r"^(menu|bingo)_"))
-    app.add_handler(CallbackQueryHandler(handle_question, pattern =r"^(final|ans)_"))
-    app.add_handler(CallbackQueryHandler(handle_approval, pattern=r"^(approve|reject):"))
-    app.add_handler(CallbackQueryHandler(handle_bingo_board, pattern=r"generate_bingo"))
+    telegram_app.add_handler(CallbackQueryHandler(button_tap, pattern=r"^(menu|bingo)_"))
+    telegram_app.add_handler(CallbackQueryHandler(handle_question, pattern =r"^(final|ans)_"))
+    telegram_app.add_handler(CallbackQueryHandler(handle_approval, pattern=r"^(approve|reject):"))
+    telegram_app.add_handler(CallbackQueryHandler(handle_bingo_board, pattern=r"generate_bingo"))
 
-    app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO | filters.Document.ALL, handle_media))
+    telegram_app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO | filters.Document.ALL, handle_media))
 
 
     print("Starting bot via webhook...")
-    app.run_webhook(
+    telegram_app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8000)),
         webhook_url=os.environ["WEBHOOK_URL"],
