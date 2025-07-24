@@ -6,7 +6,9 @@ import sqlite3
 from datetime import datetime
 import time
 import functools
+import psycopg2
 import os
+from urllib.parse import urlparse
 import re
 from dotenv import load_dotenv
 
@@ -15,41 +17,73 @@ token = os.getenv('TOKEN')
 bot_username = os.getenv('BOT_USERNAME')
 admin_user_id = -4960233673
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".mp4", ".mov"}
-port = int(os.environ.get("PORT", 8000))
+db_url = os.environ.get("DB_URL")
+username = os.environ.get("DB_USERNAME")
+password = os.environ.get("DB_PASSWORD")
+database = os.environ.get("DB_NAME")
+hostname = os.environ.get("DB_HOST")
+port = os.environ.get("DB_PORT")
 
 
 ##################################  Database Code  #################################
-DB_PATH = 'bot_tasks.db'
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH, timeout=30)
-    conn.execute('''
-      CREATE TABLE IF NOT EXISTS user_tasks (
-        user_id     INTEGER,
-        task_id     INTEGER,
-        status      BOOLEAN,
-        PRIMARY KEY (user_id, task_id)
-      )
+    
+    # Connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_tasks (
+            user_id     BIGINT,
+            task_id     INTEGER,
+            status      BOOLEAN,
+            PRIMARY KEY (user_id, task_id)
+        );
     ''')
+
     conn.commit()
+    cursor.close()
     conn.close()
     
 
 def set_task_status(user_id: int, task_id: int, status: bool):
-    conn = sqlite3.connect(DB_PATH, timeout =30)
-    conn.execute('''
+    # Connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute('''
       INSERT INTO user_tasks (user_id, task_id, status)
-      VALUES (?, ?, ?)
+      VALUES (%s, %s, %s)
       ON CONFLICT(user_id, task_id) DO UPDATE
         SET status = excluded.status
     ''', (user_id, task_id, status))
+    cursor.close()
     conn.commit()
     conn.close()
 
 def get_completed_task_ids(user_id: int) -> set[int]:
-    conn = sqlite3.connect(DB_PATH, timeout=30)
-    cursor = conn.execute(
-        'SELECT task_id FROM user_tasks WHERE user_id = ? AND status = ?',
+    # Connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT task_id FROM user_tasks WHERE user_id = %s AND status = %s',
         (user_id, True)
     )
     rows = cursor.fetchall()
@@ -60,25 +94,58 @@ def get_completed_task_ids(user_id: int) -> set[int]:
     return completed_task_ids
 
 def get_user_tasks(user_id: int) -> list:
-    conn = sqlite3.connect(DB_PATH, timeout = 30)
-    cursor = conn.execute(
-      'SELECT task_id, status FROM user_tasks WHERE user_id = ?',
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+      'SELECT task_id, status FROM user_tasks WHERE user_id = %s',
       (user_id,))
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 def is_existing_user(user_id: int) -> bool:
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.execute(
-            "SELECT 1 FROM user_tasks WHERE user_id = ? LIMIT 1",
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+            "SELECT 1 FROM user_tasks WHERE user_id = %s LIMIT 1",
             (user_id,)
         )
-        row = cursor.fetchone()
-        return row is not None
+    row = cursor.fetchone()
+    return row is not None
 
 #Dictionary of Tasks
 TASK_DICT = {
+    0: "To cross out what I've become",
+    1: "I walk a lonely road\, The only one that I have ever known\. Don't know where it goes\, But it's home to me\, and I walk alone",
+    2: "I walk this empty street\, On the Boulevard of Broken Dreams\. Where the city sleeps\, And I'm the only one\, and I walk alone",
+    3: "I walk alone\, I walk alone\, I walk alone\, and I walk a—",
+    4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
+    5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
+    6: "Read between the lines\, What's fucked up and everything's all right\. Check my vital signs To know I'm still alive\, and I walk alone",
+    7: "In this farewell There's no blood\, there's no alibi 'Cause I've drawn regret From the truth of a thousand lies",
+    8: "So let mercy come and wash away",
+    9: "What I've done\, I'll face myself To cross out what I've become",
+    10: "Erase myself And let go of what I've done",
+    11: "Put to rest What you thought of me While I clean this slate With the hands of uncertainty",
+    12: "So let mercy come and wash away",
+    13: "What I've done\, I'll face myself To cross out what I've become Erase myself And let go of what I've done",
+    14: "For what I've done\, I start again And whatever pain may come Today this ends I'm forgiving what I've",
+    15: "Done\, I'll face myself",
+}
+#Dictionary of Hints
+HINT_DICT = {
     0: "To cross out what I've become",
     1: "I walk a lonely road\, The only one that I have ever known\. Don't know where it goes\, But it's home to me\, and I walk alone",
     2: "I walk this empty street\, On the Boulevard of Broken Dreams\. Where the city sleeps\, And I'm the only one\, and I walk alone",
@@ -636,7 +703,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
 
     if action == "approve":
-        text = "Your task was approved!"
+        text = f"Your task was approved! {HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {task_id}" 
         completed_tasks = get_completed_task_ids(user_id)
