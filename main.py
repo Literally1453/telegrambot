@@ -5,6 +5,7 @@ from telegram.ext import Updater, Application, CommandHandler, MessageHandler, f
 from flask import Flask, request
 from datetime import datetime
 import time
+import asyncio
 import functools
 import psycopg2
 import os
@@ -27,10 +28,10 @@ telegram_app = Application.builder().token(token).build()
 
 @app.route("/hook", methods=["POST"])
 async def webhook():
-    update = Update.de_json(request.get_json(force=True), Bot)
-    await telegram_app.process_update(update)
-
-    return "ok", 200
+    data = request.get_json(force=True)
+    update = Update.de_json(data, telegram_app.bot)
+    await telegram_app.update_queue.put(update)
+    return "OK"
 
 ##################################  Database Code  #################################
 
@@ -767,7 +768,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
     print("Listening...")
 
 
