@@ -1,14 +1,13 @@
-from telegram import Update, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, InputMedia, Chat, Message
+from telegram import Bot, Update, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, InputMedia, Chat, Message
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
-import sqlite3
+from telegram.ext import Dispatcher, Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
+from flask import Flask, request
 from datetime import datetime
 import time
 import functools
 import psycopg2
 import os
-from urllib.parse import urlparse
 import re
 from dotenv import load_dotenv
 
@@ -23,7 +22,14 @@ password = os.environ.get("DB_PASSWORD")
 database = os.environ.get("DB_NAME")
 hostname = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
+app = Flask(__name__)
+dispatcher = Dispatcher(Bot, update_queue=None, workers=0, use_context=True)
 
+@app.route("/hook", methods=["POST"])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), Bot)
+    dispatcher.process_update(update)
+    return "ok", 200
 
 ##################################  Database Code  #################################
 
@@ -739,16 +745,11 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 ###################################  Main  ################################## 
 
-if __name__ == '__main__':
-    print("Starting bot...")
-    app = Application.builder().token(token).build()
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000)),
-        webhook_url=os.environ["WEBHOOK_URL"]
-    )
+def main():
     init_db()
 
+    app = Application.builder().token(token).build()
+    
     #Commands
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('help', help_command))
@@ -762,8 +763,19 @@ if __name__ == '__main__':
 
     app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO | filters.Document.ALL, handle_media))
 
-    print("Polling...")
-    app.run_polling(poll_interval=3)
+
+    print("Starting bot via webhook...")
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
+        webhook_url=os.environ["WEBHOOK_URL"],
+        webhook_path="/hook"
+    )
+
+if __name__ == '__main__':
+    main()
+
+    
 
 
 
