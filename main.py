@@ -4,6 +4,7 @@ from telegram.error import BadRequest
 from telegram.ext import Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
 from fastapi import FastAPI, Request
 from datetime import datetime
+from contextlib import asynccontextmanager
 import time
 import asyncio
 import functools
@@ -23,8 +24,18 @@ password = os.environ.get("DB_PASSWORD")
 database = os.environ.get("DB_NAME")
 hostname = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
-app = FastAPI()
 telegram_app = Application.builder().token(token).build()
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """ Sets the webhook for the Telegram Bot and manages its lifecycle (start/stop). """
+    await telegram_app.bot.setWebhook(url="https://telegrambot-production-49ff.up.railway.app/hook")
+    async with telegram_app:
+        await telegram_app.start()
+        yield
+        await telegram_app.stop()
+
+app = FastAPI(lifespan=lifespan)
 
 @app.post("/hook")
 async def webhook(request: Request):
