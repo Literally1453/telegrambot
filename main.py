@@ -27,6 +27,7 @@ port = os.environ.get("DB_PORT")
 WEBHOOK = "https://telegrambot-production-49ff.up.railway.app/hook"
 telegram_app = Application.builder().token(token).build()
 
+#################################### FastAPI Setup #############################################
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """ 
@@ -165,7 +166,7 @@ TASK_DICT = {
     0: "*Pedal & Paddle* \n Take a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
     1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
     2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment (i\.e\. helmet, knee and elbow guards, and hand guards) shall be rejected\.",
-    3: "I walk alone\, I walk alone\, I walk alone\, and I walk a—",
+    3: "To complete this task, you will need to take a group picture with your friends after surfing!",
     4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
     5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
     6: "Read between the lines\, What's fucked up and everything's all right\. Check my vital signs To know I'm still alive\, and I walk alone",
@@ -224,12 +225,13 @@ BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizar
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
-RULES_MENU = """1\. Safety first\! Submissions displaying unsafe practices to yourself or others 
+RULES_MENU = """
+            1\. Safety first\! Submissions displaying unsafe practices to yourself or others 
                 or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require 
                 will be rejected\. \n 
-                2\. Submissions must be done while participating in a SMUX activity\. \n 
-                3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
-                4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
+            2\. Submissions must be done while participating in a SMUX activity\. \n 
+            3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
+            4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
             """
 FINALE_MENU = "Wahoo you're done, good job and all, follow us on here here and here, and remember, it's just a theory, a GAME THEORY"
 
@@ -290,7 +292,7 @@ FINALE_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(FINALE_BUTTON, callback_data=FINALE_BUTTON_CALLBACK)]
 ]) 
 #####################################  Functions  #################################
-def has_two_bingos(completed_task_ids: set[int]) -> bool:
+def has_bingo(completed_task_ids: set[int]) -> bool:
     # Initialize a 4x4 grid of 0s
     grid = [[0 for _ in range(4)] for _ in range(4)]
 
@@ -306,21 +308,18 @@ def has_two_bingos(completed_task_ids: set[int]) -> bool:
     for row in grid:
         if all(cell == 1 for cell in row):
             bingo_count += 1
-
     # Check columns
     for col in range(4):
         if all(grid[row][col] == 1 for row in range(4)):
             bingo_count += 1
-
     # Check main diagonal
     if all(grid[i][i] == 1 for i in range(4)):
         bingo_count += 1
-
     # Check anti-diagonal
     if all(grid[i][3-i] == 1 for i in range(4)):
         bingo_count += 1
 
-    return bingo_count >= 2
+    return bingo_count >= 1
 
 def is_valid(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in VALID_EXTENSIONS)
@@ -499,7 +498,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i in range(16):
             set_task_status(user_id,i,False)
 
-    await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU)
+    await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU, parse_mode=ParseMode.MARKDOWN_V2)
 
 @enable_if_in_state("in_menu")
 @rate_limit()
@@ -736,9 +735,9 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     completed = False
     query = update.callback_query
     task_id = context.user_data.get('task_id')    
-    await query.answer()  # acknowledge
+    await query.answer()  
 
-    data = query.data  # e.g. "approve:123456789"
+    data = query.data  # e.g. "approve:123456789:username"
     action, user_id_str , username = data.split(":")
     user_id = int(user_id_str)
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
@@ -750,7 +749,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         completed_tasks = get_completed_task_ids(user_id)
         print("L641 Completed Tasks")
         print(completed_tasks)
-        if len(completed_tasks) >= 7 and has_two_bingos(completed_tasks):
+        if len(completed_tasks) >= 4 and has_bingo(completed_tasks):
             completed = True
     else:
         text = "Your task was rejected."
@@ -767,8 +766,9 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
         chat_id=user_id,
         text= QUIZ_COMP_MENU,
+        parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup = READY_MENU_MARKUP
-        ) 
+        )
     else:
         await context.bot.send_message(
                 chat_id=user_id,
