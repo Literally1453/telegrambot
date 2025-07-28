@@ -777,9 +777,9 @@ def main():
 
     print("Starting bot via webhook...")
 
-if __name__ == '__main__':
-    main()
-    print("Listening...")
+
+main()
+print("Listening...")
 
 
     
