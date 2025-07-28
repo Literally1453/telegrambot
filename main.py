@@ -2,7 +2,7 @@ from telegram import Bot, Update, ForceReply, InlineKeyboardMarkup, InlineKeyboa
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import Updater, Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackContext, CallbackQueryHandler
-from flask import Flask, request
+from fastapi import FastAPI, Request
 from datetime import datetime
 import time
 import asyncio
@@ -23,15 +23,15 @@ password = os.environ.get("DB_PASSWORD")
 database = os.environ.get("DB_NAME")
 hostname = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
-app = Flask(__name__)
+app = FastAPI()
 telegram_app = Application.builder().token(token).build()
 
-@app.route("/hook", methods=["POST"])
-async def webhook():
-    data = request.get_json(force=True)
+@app.post("/hook")
+async def webhook(request: Request):
+    data = await request.json()
     update = Update.de_json(data, telegram_app.bot)
-    await telegram_app.update_queue.put(update)
-    return "OK"
+    await telegram_app.process_update(update)
+    return {"status": "ok"} 
 
 ##################################  Database Code  #################################
 
