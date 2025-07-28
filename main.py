@@ -24,12 +24,15 @@ password = os.environ.get("DB_PASSWORD")
 database = os.environ.get("DB_NAME")
 hostname = os.environ.get("DB_HOST")
 port = os.environ.get("DB_PORT")
+WEBHOOK = "https://telegrambot-production-49ff.up.railway.app/hook"
 telegram_app = Application.builder().token(token).build()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    """ Sets the webhook for the Telegram Bot and manages its lifecycle (start/stop). """
-    await telegram_app.bot.setWebhook(url="https://telegrambot-production-49ff.up.railway.app/hook")
+    """ 
+    Manually sets the webhook for the bot and manages its lifecycle. 
+    """
+    await telegram_app.bot.setWebhook(url=WEBHOOK)
     async with telegram_app:
         await telegram_app.start()
         yield
@@ -39,6 +42,9 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/hook")
 async def webhook(request: Request):
+    """
+    Communicates with the webhook, parsing the json data
+    """
     data = await request.json()
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
@@ -72,7 +78,9 @@ def init_db():
     
 
 def set_task_status(user_id: int, task_id: int, status: bool):
-    # Connect to PostgreSQL
+    """
+    Changes the status of a task with task_id from a user with user_id
+    """
     conn = psycopg2.connect(
         dbname=database,
         user=username,
@@ -92,7 +100,9 @@ def set_task_status(user_id: int, task_id: int, status: bool):
     conn.close()
 
 def get_completed_task_ids(user_id: int) -> set[int]:
-    # Connect to PostgreSQL
+    """
+    Returns a set of task ids that the user with user_id has completed
+    """
     conn = psycopg2.connect(
         dbname=database,
         user=username,
@@ -113,6 +123,9 @@ def get_completed_task_ids(user_id: int) -> set[int]:
     return completed_task_ids
 
 def get_user_tasks(user_id: int) -> list:
+    """
+    Returns a list of tuples (task_id,status) for a user with user_id has. 
+    """
     conn = psycopg2.connect(
         dbname=database,
         user=username,
@@ -129,6 +142,9 @@ def get_user_tasks(user_id: int) -> list:
     return rows
 
 def is_existing_user(user_id: int) -> bool:
+    """
+    Checks if user with user_id already exists in the database
+    """
     conn = psycopg2.connect(
         dbname=database,
         user=username,
@@ -146,9 +162,9 @@ def is_existing_user(user_id: int) -> bool:
 
 #Dictionary of Tasks
 TASK_DICT = {
-    0: "To cross out what I've become",
-    1: "I walk a lonely road\, The only one that I have ever known\. Don't know where it goes\, But it's home to me\, and I walk alone",
-    2: "I walk this empty street\, On the Boulevard of Broken Dreams\. Where the city sleeps\, And I'm the only one\, and I walk alone",
+    0: "*Pedal & Paddle* \n Take a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
+    1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
+    2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment (i\.e\. helmet, knee and elbow guards, and hand guards) shall be rejected\.",
     3: "I walk alone\, I walk alone\, I walk alone\, and I walk a—",
     4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
     5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
@@ -199,16 +215,22 @@ ANS_DICT = {
     12: "I long for the sweet release of meth",
 }
 
-FAQ_TEXT = "PM @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal or academic issues although I wish you the best in dealing with them\."
+FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
 
 # Pre-assign menu text
-START_MENU = "Welcome to event thing. Type /menu to go to the main menu. Or type /hahaha because nothing bad ever comes from following the instructions of a bot."
-MAIN_MENU = "This is the main menu\. Click on anything you like\!"
-BINGO_MENU = "Complete 2 bingos\! \(Vertical, Horizontal or Diagonal\)"
+START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @SMUXploration Crew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
+MAIN_MENU = 'This is the main menu\. Click on "View Board" to start\!'
+BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\n To begin, press on a task\."
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
-QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to take the quiz?"
-QUIZ_INCOMP_MENU = "You aren't supposed to be here\. Do not move\. They will be here shortly\."
-RULES_MENU = "1\. Do not talk about the fight club\. \n 2\. Cereal Before Milk \n 3\. Submitting TikTok brainrot will result in a permanent ban and suspension of SMUX membership\. \n 4\. Images displaying unsafe practices will be rejected\."
+QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
+QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
+RULES_MENU = """1\. Safety first\! Submissions displaying unsafe practices to yourself or others 
+                or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require 
+                will be rejected\. \n 
+                2\. Submissions must be done while participating in a SMUX activity\. \n 
+                3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
+                4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
+            """
 FINALE_MENU = "Wahoo you're done, good job and all, follow us on here here and here, and remember, it's just a theory, a GAME THEORY"
 
 #Main Menu Buttons
@@ -559,7 +581,7 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
             caption,
             parse_mode = ParseMode.MARKDOWN_V2,
             reply_markup=InlineKeyboardMarkup(buttons))
-        await update.message.reply_text("Thanks for your submission! It is now pending approval by our admin")
+        await update.message.reply_text("Thanks for your submission! It is now pending approval by the Magic Council (a.k.a our unpaid associates)")
 
     else:
         await update.message.reply_text("Invalid file type. Please send a JPEG, PNG, MP4, or MOV.")
@@ -722,7 +744,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
 
     if action == "approve":
-        text = f"Your task was approved! {HINT_DICT[task_id]}"
+        text = f"Well done! You've earned the following clue: {HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {task_id}" 
         completed_tasks = get_completed_task_ids(user_id)
