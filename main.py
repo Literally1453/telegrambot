@@ -165,8 +165,8 @@ def is_existing_user(user_id: int) -> bool:
 TASK_DICT = {
     0: "*Pedal & Paddle* \n Take a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
     1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
-    2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment (i\.e\. helmet, knee and elbow guards, and hand guards) shall be rejected\.",
-    3: "To complete this task, you will need to take a group picture with your friends after surfing!",
+    2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment \(i\.e\. helmet, knee and elbow guards, and hand guards\) shall be rejected\.",
+    3: "To complete this task, you will need to take a group picture with your friends after surfing\!",
     4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
     5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
     6: "Read between the lines\, What's fucked up and everything's all right\. Check my vital signs To know I'm still alive\, and I walk alone",
