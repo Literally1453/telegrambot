@@ -136,7 +136,7 @@ def get_user_tasks(user_id: int) -> list:
     )
     cursor = conn.cursor()
     cursor.execute(
-      'SELECT task_id, status FROM user_tasks WHERE user_id = %s',
+    'SELECT task_id, status FROM user_tasks WHERE user_id = %s ORDER BY task_id ASC',
       (user_id,))
     rows = cursor.fetchall()
     conn.close()
