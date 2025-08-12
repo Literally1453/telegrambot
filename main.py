@@ -713,6 +713,7 @@ async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
 
     task_list = get_user_tasks(user_id) #gets a list of the tasks with status (complete or not) from database
+    print(task_list)
     text = BINGO_MENU
     markup = generate_bingo_board(task_list)
 
