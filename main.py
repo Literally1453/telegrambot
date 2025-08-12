@@ -167,9 +167,9 @@ TASK_DICT = {
     1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
     2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment \(i\.e\. helmet, knee and elbow guards, and hand guards\) shall be rejected\.",
     3: "*Stationary Surfing* \n To complete this task, you will need to take a group picture with your friends after surfing\!",
-    4: "*Longboard Clinic* \n To complete this task, you will need to take a video of you and your friends longboarding\! Remember, any submissions where proper safety equipment (i\.e\. helmet, knee and elbow guards, and hand guards) shall be rejected\. Videos recorded while you are on the board are also not accepted\.",
+    4: "*Longboard Clinic* \n To complete this task, you will need to take a video of you and your friends longboarding\! Remember, any submissions where proper safety equipment \(i\.e\.\ helmet, knee and elbow guards, and hand guards\) shall be rejected\. Videos recorded while you are on the board are also not accepted\.",
     5: "*Garden of Colours* \n Take a selfie of you completing one of the activities at the event and post it up on your Instagram story\. Don’t forget to tag @smuxplorationcrew\! Submit a screenshot of your uploaded story to complete this task\.",
-    6: "*Cable Board* \n To complete this task, you will need to take a group picture with your friends (or your new cable board mates) at the wake park\.",
+    6: "*Cable Board* \n To complete this task, you will need to take a group picture with your friends \(or your new cable board mates\) at the wake park\.",
     7: "*Any local hike with SMUX Trekking* \n To complete this task, you will need to take a picture or a video of a brightly coloured plant you encountered on your hike\.",
     8: "midnight hike",
     9: "*Kayaking Orientation Programme* \n To complete this task, you will need to take an OOTD video wearing your Personal Floatation Device\!",
@@ -748,13 +748,13 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if action == "approve":
         text = f"Well done! You've earned the following clue: {HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
-        admin_text =f"You approved @{clean_username_input(username)} task number {task_id}" 
+        admin_text =f"You approved @{clean_username_input(username)} task number {str(task_id+1)}" 
         completed_tasks = get_completed_task_ids(user_id)
         if len(completed_tasks) >= 4 and has_bingo(completed_tasks):
             completed = True
     else:
         text = "Your task was rejected."
-        admin_text =f"You rejected @{clean_username_input(username)} task number {task_id}" 
+        admin_text =f"You rejected @{clean_username_input(username)} task number {str(task_id+1)}" 
 
     await query.edit_message_text(
         text=admin_text,
