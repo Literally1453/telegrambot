@@ -350,7 +350,7 @@ def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
         if activity_list[i][1]: #If status == True i.e. task has been completed
             row.append(InlineKeyboardButton("✅", callback_data=callback_data))
         else: 
-            row.append(InlineKeyboardButton(text=str(activity_list[i][0]+1), callback_data=callback_data))
+            row.append(InlineKeyboardButton(text=str(i+1), callback_data=callback_data))
         if (i+1) % 4 == 0:
             grid.append(row)
             row = []
