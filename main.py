@@ -166,19 +166,19 @@ TASK_DICT = {
     0: "*Pedal & Paddle* \n Take a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
     1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
     2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment \(i\.e\. helmet, knee and elbow guards, and hand guards\) shall be rejected\.",
-    3: "To complete this task, you will need to take a group picture with your friends after surfing\!",
-    4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
-    5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
-    6: "Read between the lines\, What's fucked up and everything's all right\. Check my vital signs To know I'm still alive\, and I walk alone",
-    7: "In this farewell There's no blood\, there's no alibi 'Cause I've drawn regret From the truth of a thousand lies",
-    8: "So let mercy come and wash away",
-    9: "What I've done\, I'll face myself To cross out what I've become",
-    10: "Erase myself And let go of what I've done",
-    11: "Put to rest What you thought of me While I clean this slate With the hands of uncertainty",
-    12: "So let mercy come and wash away",
-    13: "What I've done\, I'll face myself To cross out what I've become Erase myself And let go of what I've done",
-    14: "For what I've done\, I start again And whatever pain may come Today this ends I'm forgiving what I've",
-    15: "Done\, I'll face myself",
+    3: "*Stationary Surfing* \n To complete this task, you will need to take a group picture with your friends after surfing\!",
+    4: "*Longboard Clinic* \n To complete this task, you will need to take a video of you and your friends longboarding\! Remember, any submissions where proper safety equipment (i\.e\. helmet, knee and elbow guards, and hand guards) shall be rejected\. Videos recorded while you are on the board are also not accepted\.",
+    5: "*Garden of Colours* \n Take a selfie of you completing one of the activities at the event and post it up on your Instagram story\. Don’t forget to tag @smuxplorationcrew\! Submit a screenshot of your uploaded story to complete this task\.",
+    6: "*Cable Board* \n To complete this task, you will need to take a group picture with your friends (or your new cable board mates) at the wake park\.",
+    7: "*Any local hike with SMUX Trekking* \n To complete this task, you will need to take a picture or a video of a brightly coloured plant you encountered on your hike\.",
+    8: "midnight hike",
+    9: "*Kayaking Orientation Programme* \n To complete this task, you will need to take an OOTD video wearing your Personal Floatation Device\!",
+    10: "*PCN Rideout* \n To complete this task, take a cool photo of you, in your safety gears, and your bike\!",
+    11: "*Halloween Skate* \n To complete this task, take a video of you skating in your Halloween fit\!",
+    12: "*Intertidal Walk at Lazarus Island* \n To complete this task, take a picture or a video of an animal found during the intertidal walk\. ",
+    13: "*Any dive with SMUX Diving* \n To complete this task, take a picture of you on the boat making a crown with your hands after a dive\!",
+    14: "*Tandem Bike* \n To complete this task, take a picture of you and your partner in any of the following poses:",
+    15: "*PCN Rideout* \n To complete this task, take a cool photo of you, in your safety gears, and your bike\!",
 }
 #Dictionary of Hints
 HINT_DICT = {
@@ -350,7 +350,7 @@ def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
         if activity_list[i][1]: #If status == True i.e. task has been completed
             row.append(InlineKeyboardButton("✅", callback_data=callback_data))
         else: 
-            row.append(InlineKeyboardButton(activity_list[i][0]+1, callback_data=callback_data))
+            row.append(InlineKeyboardButton(text=str(activity_list[i][0]+1), callback_data=callback_data))
         if (i+1) % 4 == 0:
             grid.append(row)
             row = []
@@ -734,6 +734,8 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     completed = False
     query = update.callback_query
+    print(query)
+    print(context.user_data)
     task_id = context.user_data.get('task_id')    
     await query.answer()  
 
@@ -747,8 +749,6 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {task_id}" 
         completed_tasks = get_completed_task_ids(user_id)
-        print("L641 Completed Tasks")
-        print(completed_tasks)
         if len(completed_tasks) >= 4 and has_bingo(completed_tasks):
             completed = True
     else:
