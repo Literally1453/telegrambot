@@ -566,7 +566,7 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton(REJECT_BUTTON, callback_data=f"reject:{user_id}:{username}"),
         ]]
 
-    caption = "@" + clean_username_input(username) + " completing Task " + str(task_id) + " Approve or reject"
+    caption = "@" + clean_username_input(username) + " completing Task " + str(task_id+1) + " Approve or reject"
     if file_id and file_name and is_valid(file_name):
         print("passed true")
         if file_type == 'photo':
