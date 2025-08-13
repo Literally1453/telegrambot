@@ -562,8 +562,8 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
         file_type = "document"
 
     buttons = [[
-            InlineKeyboardButton(APPROVE_BUTTON, callback_data=f"approve:{user_id}:{username}"),
-            InlineKeyboardButton(REJECT_BUTTON, callback_data=f"reject:{user_id}:{username}"),
+            InlineKeyboardButton(APPROVE_BUTTON, callback_data=f"approve:{user_id}:{username}:{task_id}"),
+            InlineKeyboardButton(REJECT_BUTTON, callback_data=f"reject:{user_id}:{username}:{task_id}"),
         ]]
 
     caption = "@" + clean_username_input(username) + " completing Task " + str(task_id+1) + " Approve or reject"
@@ -735,14 +735,13 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     completed = False
     query = update.callback_query
-    print(query)
-    print(context.user_data)
-    task_id = context.user_data.get('task_id')    
+    print(query)  
     await query.answer()  
 
-    data = query.data  # e.g. "approve:123456789:username"
-    action, user_id_str , username = data.split(":")
+    data = query.data  # e.g. "approve:123456789:username:<task_id>"
+    action, user_id_str , username , task_id_str = data.split(":")
     user_id = int(user_id_str)
+    task_id = int(task_id_str)
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
 
     if action == "approve":
