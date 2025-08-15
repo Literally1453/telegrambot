@@ -268,7 +268,7 @@ NO_BUTTON_CALLBACK = "final_n"
 
 #Finale Button
 FINALE_BUTTON = "Finale"
-FINALE_BUTTON_CALLBACK = 'finale'
+FINALE_BUTTON_CALLBACK = 'menu_finale'
 
 ####################################### CONSTANT MARKUPS ################################################
 
@@ -691,7 +691,8 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     elif "bingo" in data:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
-        context.user_data['task_id'] = task_id  
+        context.user_data['task_id'] = task_id
+        if 
         task_description = TASK_DICT[task_id]
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(task_id)
@@ -743,9 +744,10 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = int(user_id_str)
     task_id = int(task_id_str)
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Go back to Bingo Board", callback_data=BINGO_MENU_CALLBACK)]])
+    prompt_text = "Good luck on your next adventure\!"
 
     if action == "approve":
-        text = f"Well done! You've earned the following clue: {HINT_DICT[task_id]}"
+        hint_text = f"Well done in completing Activity {task_id+1}! You've earned the following clue: {HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {str(task_id+1)}" 
         completed_tasks = get_completed_task_ids(user_id)
@@ -772,8 +774,14 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await context.bot.send_message(
                 chat_id=user_id,
-                text=text,
-                reply_markup=markup
+                text=hint_text,
+                parse_mode= ParseMode.MARKDOWN_V2
+            )
+        await context.bot.send_message(
+                chat_id=user_id,
+                text=prompt_text,
+                reply_markup=markup,
+                parse_mode= ParseMode.MARKDOWN_V2
             )
         
 
