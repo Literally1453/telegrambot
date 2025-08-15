@@ -692,7 +692,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
         context.user_data['task_id'] = task_id
-        if 
+
         task_description = TASK_DICT[task_id]
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(task_id)
