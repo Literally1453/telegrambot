@@ -182,10 +182,10 @@ TASK_DICT = {
 }
 #Dictionary of Hints
 HINT_DICT = {
-    0: "To cross out what I've become",
-    1: "I walk a lonely road\, The only one that I have ever known\. Don't know where it goes\, But it's home to me\, and I walk alone",
-    2: "I walk this empty street\, On the Boulevard of Broken Dreams\. Where the city sleeps\, And I'm the only one\, and I walk alone",
-    3: "I walk alone\, I walk alone\, I walk alone\, and I walk a—",
+    0: "_“I lurk where light forgets to tread, \n Half in shadow, half in thread\.”_",
+    1: "_“I am a workshop with no nails, \n A lab where mouths submit their trials.”_",
+    2: "_“I hold court with no tribunal, issue edicts with no voice, \n My scepters are a row of marks \— neat witnesses of choice\.”_",
+    3: "_“I slip through cracks to sip your tales, \n Follow whispers, ride the gales\.”_",
     4: "My shadow's the only one that walks beside me\. My shallow heart's the only thing that's beatin'\. Sometimes\, I wish someone out there will find me\, 'Til then\, I walk alone",
     5: "I'm walkin' down the line That divides me somewhere in my mind\. On the borderline Of the edge and where I walk alone",
     6: "Read between the lines\, What's fucked up and everything's all right\. Check my vital signs To know I'm still alive\, and I walk alone",
