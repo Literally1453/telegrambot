@@ -184,41 +184,41 @@ def is_existing_user(user_id: int) -> bool:
 
 #Dictionary of Tasks
 TASK_DICT = {
-    0: "*Pedal & Paddle* \n Take a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
-    1: "*Charity Walk* \n Take a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
-    2: "*Skate Clinic* \n Take a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment \(i\.e\. helmet, knee and elbow guards, and hand guards\) shall be rejected\.",
-    3: "*Stationary Surfing* \n To complete this task, you will need to take a group picture with your friends after surfing\!",
-    4: "*Longboard Clinic* \n To complete this task, you will need to take a video of you and your friends longboarding\! Remember, any submissions where proper safety equipment \(i\.e\.\ helmet, knee and elbow guards, and hand guards\) shall be rejected\. Videos recorded while you are on the board are also not accepted\.",
-    5: "*Garden of Colours* \n Take a selfie of you completing one of the activities at the event and post it up on your Instagram story\. Don’t forget to tag @smuxplorationcrew\! Submit a screenshot of your uploaded story to complete this task\.",
-    6: "*Cable Board* \n To complete this task, you will need to take a group picture with your friends \(or your new cable board mates\) at the wake park\.",
-    7: "*Any local hike with SMUX Trekking* \n To complete this task, you will need to take a picture or a video of a brightly coloured plant you encountered on your hike\.",
-    8: "*Midnight Trek* \n To complete this task, you will need to take a short video of yourself packing for the Midnight Trek\! Note that your submission only counts if you have attended the session organised by SMUX Trekking\.",
-    9: "*Kayaking Orientation Programme* \n To complete this task, you will need to take an OOTD video wearing your Personal Floatation Device\!",
-    10: "*PCN Rideout* \n To complete this task, take a cool photo of you, in your safety gears, and your bike\!",
-    11: "*Halloween Skate* \n To complete this task, take a video of you skating in your Halloween fit\!",
-    12: "*PCN Rideout* \n To complete this task, take a cool photo of you, in your safety gears, and your bike\!",
-    13: "*Intertidal Walk at Lazarus Island* \n To complete this task, take a picture or a video of an animal found during the intertidal walk\. ",
-    14: "*Any dive with SMUX Diving* \n To complete this task, take a picture of you on the boat making a crown with your hands after a dive\!",
-    15: "*Tandem Bike* \n To complete this task, take a picture of you and your partner in any of the following poses:",
+    0: "*Pedal & Paddle* \nTake a picture of you with either your kayak or SUP equipment\. Your submission will not be accepted by the Magic Council if your equipment is handled poorly\.",
+    1: "*Charity Walk* \nTake a selfie at any of the booths during the Charity Walk\. Bask in the strength of community and learn the power of empathy\. ",
+    2: "*Skate Clinic* \nTake a video of yourself executing a new skate skill\. Your chosen skill can range from the most foundational or the most advanced skill \- this includes the proper fall method\. All the best\! Remember, any submissions where proper safety equipment \(i\.e\. helmet, knee and elbow guards, and hand guards\) shall be rejected\.",
+    3: "*Stationary Surfing* \nTo complete this task, you will need to take a group picture with your friends after surfing\!",
+    4: "*Longboard Clinic* \nTo complete this task, you will need to take a video of you and your friends longboarding\! Remember, any submissions where proper safety equipment \(i\.e\.\ helmet, knee and elbow guards, and hand guards\) shall be rejected\. Videos recorded while you are on the board are also not accepted\.",
+    5: "*Garden of Colours* \nTake a selfie of you completing one of the activities at the event and post it up on your Instagram story\. Don’t forget to tag @smuxplorationcrew\! Submit a screenshot of your uploaded story to complete this task\.",
+    6: "*Cable Board* \nTo complete this task, you will need to take a group picture with your friends \(or your new cable board mates\) at the wake park\.",
+    7: "*Any local hike with SMUX Trekking* \nTo complete this task, you will need to take a picture or a video of a brightly coloured plant you encountered on your hike\.",
+    8: "*Midnight Trek* \nTo complete this task, you will need to take a short video of yourself packing for the Midnight Trek\! Note that your submission only counts if you have attended the session organised by SMUX Trekking\.",
+    9: "*Kayaking Orientation Programme* \nTo complete this task, you will need to take an OOTD video wearing your Personal Floatation Device\!",
+    10: "*PCN Rideout* \nTo complete this task, take a cool photo of you, in your safety gears, and your bike\!",
+    11: "*Halloween Skate* \nTo complete this task, take a video of you skating in your Halloween fit\!",
+    12: "*PCN Rideout* \nTo complete this task, take a cool photo of you, in your safety gears, and your bike\!",
+    13: "*Intertidal Walk at Lazarus Island* \nTo complete this task, take a picture or a video of an animal found during the intertidal walk\. ",
+    14: "*Any dive with SMUX Diving* \nTo complete this task, take a picture of you on the boat making a crown with your hands after a dive\!",
+    15: "*Tandem Bike* \nTo complete this task, take a picture of you and your partner in any of the following poses:",
 }
 #Dictionary of Hints
 HINT_DICT = {
-    0: "_“I lurk where light forgets to tread, \n Half in shadow, half in thread\.”_",
-    1: "_“I am a workshop with no nails, \n A lab where mouths submit their trials\.”_",
-    2: "_“I hold court with no tribunal, issue edicts with no voice, \n My scepters are a row of marks \— neat witnesses of choice\.”_",
-    3: "_“I slip through cracks to sip your tales, \n Follow whispers, ride the gales\.”_",
-    4: "_“I’m dressed in storms from head to toe, \n A curious tide with nowhere to go\.”_",
-    5: "_“I tame wild heat with lids and flame, \n Turn salt to gold and scraps to fame\.”_",
-    6: "_“I swear no fealty to a crown, yet kings and carpenters seek me\. \n I speak in little battalions that march from zero to infinity\.”_",
-    7: "_“I keep vessels that never sink, \n And drawers that never sleep or blink\.”_",
-    8: "_“I host midnight meetings without guests, \n And feed a kingdom from my chest\.”_",
+    0: "_“I lurk where light forgets to tread, \nHalf in shadow, half in thread\.”_",
+    1: "_“I am a workshop with no nails, \nA lab where mouths submit their trials\.”_",
+    2: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks \— neat witnesses of choice\.”_",
+    3: "_“I slip through cracks to sip your tales, \nFollow whispers, ride the gales\.”_",
+    4: "_“I’m dressed in storms from head to toe, \nA curious tide with nowhere to go\.”_",
+    5: "_“I tame wild heat with lids and flame, \nTurn salt to gold and scraps to fame\.”_",
+    6: "_“I swear no fealty to a crown, yet kings and carpenters seek me\. \nI speak in little battalions that march from zero to infinity\.”_",
+    7: "_“I keep vessels that never sink, \nAnd drawers that never sleep or blink\.”_",
+    8: "_“I host midnight meetings without guests, \nAnd feed a kingdom from my chest\.”_",
     9: "_“Bend my will and truth bends too; break my law and counting stops\.”_",
-    10: "_“You’ll never see me when you should, \n But I’ll know more than you thought I could\.”_",
+    10: "_“You’ll never see me when you should, \nBut I’ll know more than you thought I could\.”_",
     11: "_“I travel folded in a pocket, stand disciplined on desktop tops\.”_",
     12: "_“Follow whispers, ride the gales\.”_",
     13: "_“Follow whispers, ride the gales\.”_",
-    14: "_“I tame wild heat with lids and flame, \n Turn salt to gold and scraps to fame\.”_",
-    15: "_“I hold court with no tribunal, issue edicts with no voice, \n My scepters are a row of marks \— neat witnesses of choice\.”_",
+    14: "_“I tame wild heat with lids and flame, \nTurn salt to gold and scraps to fame\.”_",
+    15: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks \— neat witnesses of choice\.”_",
 }
 
 PERSON_DICT = {
@@ -261,6 +261,7 @@ BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizar
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
+QUIZ_FIN_MENU = "You've solved the Magic Mystery\! We hope you weren't intending on changing your answers because like a project due at 2359, all submissions are final\."
 RULES_MENU = textwrap.dedent("""
             1\. Safety first\! Submissions displaying unsafe practices to yourself or others or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require will be rejected\. \n 
             2\. Submissions must be done while participating in a SMUX activity\. \n 
@@ -283,6 +284,8 @@ QUIZ_INCOMP_BUTTON = 'Hidden'
 QUIZ_INCOMP_BUTTON_CALLBACK = "menu_quiz_1"
 QUIZ_COMP_BUTTON = "Solve Mystery"
 QUIZ_COMP_BUTTON_CALLBACK = "menu_quiz_2"
+QUIZ_FIN_BUTTON = "Mystery Solved!"
+QUIZ_FIN_BUTTON_CALLBACK = "menu_quiz_3"
 
 FAQ_BUTTON = 'FAQ / Queries'
 FAQ_BUTTON_CALLBACK = "menu_faq"
@@ -324,6 +327,12 @@ MAIN_MENU_COMP_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(QUIZ_COMP_BUTTON, callback_data=QUIZ_COMP_BUTTON_CALLBACK), 
     InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
 ])
+MAIN_MENU_FIN_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+    [InlineKeyboardButton(QUIZ_FIN_BUTTON, callback_data=QUIZ_FIN_BUTTON_CALLBACK), 
+    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+]) 
 READY_MENU_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
     [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
@@ -337,33 +346,21 @@ FINALE_MARKUP = InlineKeyboardMarkup([
 
 #####################################  Functions  #################################
 def has_bingo(completed_task_ids: set[int]) -> bool:
-    # Initialize a 4x4 grid of 0s
-    grid = [[0 for _ in range(4)] for _ in range(4)]
+    # All possible winning lines in a 4x4 bingo grid
+    winning_lines = []
 
-    # Fill in completed tasks
-    for task_id in completed_task_ids:
-        row = (task_id) % 4
-        col = (task_id) % 4
-        grid[row][col] = 1
+    # Rows
+    for r in range(4):
+        winning_lines.append({r * 4 + c for c in range(4)})
+    # Columns
+    for c in range(4):
+        winning_lines.append({r * 4 + c for r in range(4)})
+    # Diagonals
+    winning_lines.append({0, 5, 10, 15})  
+    winning_lines.append({3, 6, 9, 12})   
 
-    bingo_count = 0
-
-    # Check rows
-    for row in grid:
-        if all(cell == 1 for cell in row):
-            bingo_count += 1
-    # Check columns
-    for col in range(4):
-        if all(grid[row][col] == 1 for row in range(4)):
-            bingo_count += 1
-    # Check main diagonal
-    if all(grid[i][i] == 1 for i in range(4)):
-        bingo_count += 1
-    # Check anti-diagonal
-    if all(grid[i][3-i] == 1 for i in range(4)):
-        bingo_count += 1
-
-    return bingo_count >= 1
+    # Check if any winning line is fully contained in completed_task_ids
+    return any(line.issubset(completed_task_ids) for line in winning_lines)
 
 def is_valid(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in VALID_EXTENSIONS)
@@ -525,7 +522,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     #Initializing context variables
     context.user_data['completed_bingo'] = False #Sets as false, main menu will display first version
-    context.user_data['quiz_answers'] = ""
     context.user_data['state'] = "in_menu" 
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
@@ -557,9 +553,12 @@ async def display_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @enable_if_in_state("in_menu")
 @rate_limit()
 async def menu_command(update: Update, context: CallbackContext) -> None:
-    check_completed = context.user_data.get('completed_bingo')
+    user_id = update.effective_user.id #user_id of sender
+    completed_tasks = get_completed_task_ids(user_id)
     markup = ""
-    if check_completed:
+    if has_bingo(completed_tasks) and len(completed_tasks) == 16:
+        markup = MAIN_MENU_FIN_MARKUP
+    elif has_bingo(completed_tasks):
         markup = MAIN_MENU_COMP_MARKUP
     else:
         markup = MAIN_MENU_MARKUP
@@ -733,6 +732,10 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
         text = QUIZ_INCOMP_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+    elif data == QUIZ_FIN_BUTTON_CALLBACK:
+    # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
+        text = QUIZ_FIN_MENU
+        markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
     elif data == FINALE_BUTTON_CALLBACK:
         text = FINALE_MENU
         markup = MAIN_MENU_MARKUP
@@ -743,9 +746,9 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         task_description = TASK_DICT[task_id]
         if get_status_of_task(user_id,task_id):
             item = PERSON_DICT[get_object_num(task_id)]
-            task_description += f"\n You have completed this task\. The hint to find the {item} is: \n {HINT_DICT[task_id]}"
+            task_description += f"\n\nYou have completed this task\. The hint to find the {item} is: \n {HINT_DICT[task_id]}"
         else:
-            task_description += "\n If you are ready to complete this task, press 'Submit'\!"
+            task_description += "\n\nIf you are ready to complete this task, press 'Submit'\!"
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(task_id)
 
@@ -800,14 +803,14 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if action == "approve":
         item = PERSON_DICT[get_object_num(task_id)]
-        first_text = f"Well done in completing Activity {task_id+1}\! \n You've earned the following clue to find the {item}: \n {HINT_DICT[task_id]}"
+        first_text = f"Well done in completing Activity {task_id+1}\! \nYou've earned the following clue to find the {item}: \n{HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {str(task_id+1)}" 
         completed_tasks = get_completed_task_ids(user_id)
         if len(completed_tasks) >= 4 and has_bingo(completed_tasks):
             completed = True
     else:
-        first_text = "Your task was rejected\. It's possible that you did not follow one of the rules\. Try again\!"
+        first_text = "Your task was rejected\. It's possible that you did not follow one of the rules\. Try again\! You may also talk to the manager @malfn19 if you need clarification\."
         admin_text =f"You rejected @{clean_username_input(username)} task number {str(task_id+1)}" 
 
     await query.edit_message_text(
