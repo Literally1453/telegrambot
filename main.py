@@ -675,7 +675,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
             markup = generate_question(3)
         else: #third answer:
             context.user_data['quiz_answers'] += f"Suspect: {ANS_DICT[ans_id]}"
-            text = f"You have given the following answers: {context.user_data['quiz_answers']}. \nIs this your final answer?"
+            text = f"You have given the following answers: {context.user_data['quiz_answers']}\. \nIs this your final answer?"
             markup = CONFIRMATION_MARKUP   
 
     # Close the query to end the client-side loading animation
