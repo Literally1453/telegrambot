@@ -229,18 +229,27 @@ PERSON_DICT = {
 
 #Dictionary of answers
 ANS_DICT = {
-    1: "Apple",
-    2: "Orange",
-    3: "Mango",
-    4: "The feeling that \n you matter to someone",
-    5: "Id",
-    6: "Ego",
-    7: "Superego",
-    8: "Random MCQ Answers",
-    9: "Chill",
-    10: "Not Chill",
-    11: "Overly Chill",
-    12: "I long for the sweet release of meth",
+    0: "Pencil",
+    1: "Knife",
+    2: "Ruler",
+    3: "Gun",
+    4: "Pen",
+    5: "Scissors",
+    6: "Rope",
+    7: "School",
+    8: "Cave",
+    9: "Kitchen",
+    10: "Toilet",
+    11: "Library",
+    12: "Swimming Pool",
+    13: "Laboratory",
+    14: "Malcolm",
+    15: "Raph",
+    16: "An Wen",
+    17: "Balqis",
+    18: "Yang Ling",
+    19: "Nadra",
+    20: "Chris",
 }
 
 FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
@@ -253,9 +262,7 @@ SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a p
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
 RULES_MENU = textwrap.dedent("""
-            1\. Safety first\! Submissions displaying unsafe practices to yourself or others 
-            or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require 
-            will be rejected\. \n 
+            1\. Safety first\! Submissions displaying unsafe practices to yourself or others or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require will be rejected\. \n 
             2\. Submissions must be done while participating in a SMUX activity\. \n 
             3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
             4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
@@ -426,25 +433,8 @@ def generate_question_callback(question_id) -> InlineKeyboardButton:
 
 def generate_question(question_num) -> InlineKeyboardMarkup:
     grid = []
-    row = []
-    if question_num == 1:
-        row.append(generate_question_callback(1))
-        row.append(generate_question_callback(2))
-        grid.append(row)
-        row = []
-        grid.append([generate_question_callback(3),generate_question_callback(4)])
-    elif question_num == 2:
-        row.append(generate_question_callback(5))
-        row.append(generate_question_callback(6))
-        grid.append(row)
-        row = []
-        grid.append([generate_question_callback(7),generate_question_callback(8)])
-    elif question_num == 3:
-        row.append(generate_question_callback(9))
-        row.append(generate_question_callback(10))
-        grid.append(row)
-        row = []
-        grid.append([generate_question_callback(11),generate_question_callback(12)])
+    for i in range(7):
+        grid.append([generate_question_callback(7 * question_num - (7 - i))])
         
     return InlineKeyboardMarkup(grid)
 
@@ -516,7 +506,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     """
     First command triggered by /start. Will display the poster image and caption explaining the event
-
     """
     message_type: str = update.message.chat.type
     text: str = update.message.text
