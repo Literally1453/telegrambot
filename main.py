@@ -11,6 +11,7 @@ import functools
 import psycopg2
 import os
 import re
+import textwrap
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -123,6 +124,26 @@ def get_completed_task_ids(user_id: int) -> set[int]:
     completed_task_ids = {row[0] for row in rows}
     return completed_task_ids
 
+def get_status_of_task(user_id: int, task_id: int) -> set[int]:
+    """
+    Returns status for the specified user_id and task_id argument 
+    """
+    conn = psycopg2.connect(
+        dbname=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT status FROM user_tasks WHERE user_id = %s AND task_id = %s',
+        (user_id, task_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row
+
 def get_user_tasks(user_id: int) -> list:
     """
     Returns a list of tuples (task_id,status) for a user with user_id has. 
@@ -182,7 +203,7 @@ TASK_DICT = {
 }
 #Dictionary of Hints
 HINT_DICT = {
-    0: "_“I lurk where light forgets to tread, \n Half in shadow, half in thread\.”_",
+    0: "Very well, you have earned the following clue to find the *Evil Wizard* \- \n _“I lurk where light forgets to tread, \n Half in shadow, half in thread\.”_",
     1: "_“I am a workshop with no nails, \n A lab where mouths submit their trials.”_",
     2: "_“I hold court with no tribunal, issue edicts with no voice, \n My scepters are a row of marks \— neat witnesses of choice\.”_",
     3: "_“I slip through cracks to sip your tales, \n Follow whispers, ride the gales\.”_",
@@ -225,14 +246,14 @@ BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizar
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
-RULES_MENU = """
+RULES_MENU = textwrap.dedent("""
             1\. Safety first\! Submissions displaying unsafe practices to yourself or others 
                 or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require 
                 will be rejected\. \n 
             2\. Submissions must be done while participating in a SMUX activity\. \n 
             3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
             4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
-            """
+            """)
 FINALE_MENU = "Wahoo you're done, good job and all, follow us on here here and here, and remember, it's just a theory, a GAME THEORY"
 
 #Main Menu Buttons
@@ -649,6 +670,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
 
     """
     data = update.callback_query.data # This is the callback_data for whatever button that was pressed
+    user_id = update.callback_query.from_user.id
     print(data)
     text = ''
     markup = None
@@ -692,8 +714,10 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
         context.user_data['task_id'] = task_id
-
-        task_description = TASK_DICT[task_id]
+        if get_status_of_task(user_id,task_id):
+            task_description = TASK_DICT[task_id] + "\n You have completed this task\. The hint is: \n" + HINT_DICT[task_id]
+        else:
+            task_description = TASK_DICT[task_id]
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(task_id)
 
@@ -747,7 +771,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     prompt_text = "Good luck on your next adventure\!"
 
     if action == "approve":
-        hint_text = f"Well done in completing Activity {task_id+1}! You've earned the following clue: {HINT_DICT[task_id]}"
+        hint_text = f"Well done in completing Activity {task_id+1}\! You've earned the following clue: {HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
         admin_text =f"You approved @{clean_username_input(username)} task number {str(task_id+1)}" 
         completed_tasks = get_completed_task_ids(user_id)
