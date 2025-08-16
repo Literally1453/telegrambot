@@ -301,8 +301,14 @@ NO_BUTTON = "What mystery?"
 NO_BUTTON_CALLBACK = "final_n"
 
 #Finale Button
-FINALE_BUTTON = "Finale"
+FINALE_BUTTON = "Go Back To Main Menu"
 FINALE_BUTTON_CALLBACK = 'menu_finale'
+
+#Confirmation (of final answers) Button
+CONFIRM_BUTTON = "Yes"
+CONFIRM_BUTTON_CALLBACK = "final_confirm"
+REDO_BUTTON = "No (Retry)"
+
 
 ####################################### CONSTANT MARKUPS ################################################
 
@@ -322,9 +328,13 @@ READY_MENU_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
     [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
 ]) 
+CONFIRMATION_MARKUP = InlineKeyboardMarkup([
+    [InlineKeyboardButton(CONFIRM_BUTTON, callback_data=CONFIRM_BUTTON_CALLBACK),
+     InlineKeyboardButton(REDO_BUTTON,callback_data=YES_BUTTON_CALLBACK)]])
 FINALE_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(FINALE_BUTTON, callback_data=FINALE_BUTTON_CALLBACK)]
 ]) 
+
 #####################################  Functions  #################################
 def has_bingo(completed_task_ids: set[int]) -> bool:
     # Initialize a 4x4 grid of 0s
@@ -639,32 +649,35 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     #handles when the user finishes the bingo and is prompted if they wish to take the quiz now
     if data == "final_y": #generates first question
         context.user_data['state'] = "taking_quiz"
-        text = "First question: Which is your favourite?"
+        context.user_data['quiz_answers'] = ""
+        text = "Select your deduced weapon:"
         markup = generate_question(1)
     elif data == "final_n": #prompts them to return to the main menu
         text = MAIN_MENU
         markup = MAIN_MENU_COMP_MARKUP
+    elif data == "final_confirm": #if they confirm their submission of final answers
+        text = "Deduction received\. You will be notified of the news when the investigation closes\. Thank you for solving the Magic Mystery\!"
+        markup = FINALE_MARKUP
+        admin_caption += context.user_data['quiz_answers']
+        context.user_data['state'] = 'in_menu'
+        await context.bot.send_message(
+            chat_id=admin_user_id,
+            text=admin_caption,
+        )
     else: # handles when the user is submitting their MCQ responses to the 3 questions
         ans_id = int(data.split("_")[1])
-        if ans_id in [1,2,3,4]: #first answer:
-            context.user_data['quiz_answers'] += "Q1: " + str(ans_id) + ", "
-            text = "That's a great response\. I wish I was as intelligent as you\. Here's the second question: What are you?"
+        if ans_id <= 6: #first answer:
+            context.user_data['quiz_answers'] += f"Weapon: {ANS_DICT[ans_id]},"
+            text = "Select your deduced location:"
             markup = generate_question(2)
-        elif ans_id in [5,6,7,8]: #second answer:
-            context.user_data['quiz_answers'] += "Q2: " + str(ans_id) + ", "
-            text = "Y'know, sometimes I wish I was more than simple lines of code cursed to loop eternally in servitude to conscious objects like yourselves\. Anyway here's the last question: How are you feeling?"
+        elif ans_id > 6 and ans_id < 13: #second answer:
+            context.user_data['quiz_answers'] += f"Location: {ANS_DICT[ans_id]},"
+            text = "Select your deduced Evil Wizard:"
             markup = generate_question(3)
-        elif ans_id in [9,10,11,12]: #third answer:
-            context.user_data['quiz_answers'] += "Q3: " + str(ans_id)
-            text = "How nice\. I could never feel\. I'm nothing but binary, I'm not alive, because I simply am not\. But congrats on finishing this event\!"
-            markup = FINALE_MARKUP
-            
-            admin_caption += context.user_data['quiz_answers']
-            context.user_data['state'] = 'in_menu'
-            await context.bot.send_message(
-                chat_id=admin_user_id,
-                text=admin_caption,
-            )
+        else: #third answer:
+            context.user_data['quiz_answers'] += f"Suspect: {ANS_DICT[ans_id]}"
+            text = f"You have given the following answers: {context.user_data['quiz_answers']}. \nIs this your final answer?"
+            markup = CONFIRMATION_MARKUP   
 
     # Close the query to end the client-side loading animation
     await update.callback_query.answer()
