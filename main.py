@@ -373,12 +373,6 @@ def get_object_num(task_id: int) -> int:
 def generate_main_menu(user_id) -> tuple:
     completed_tasks = get_completed_task_ids(user_id)
     text = MAIN_MENU
-    markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
-                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-            ])
     if has_bingo(completed_tasks) and len(completed_tasks) == 16:
         text = FINALE_MENU
         quiz_button = QUIZ_FIN_BUTTON
@@ -389,6 +383,13 @@ def generate_main_menu(user_id) -> tuple:
     else:
         quiz_button = QUIZ_INCOMP_BUTTON
         quiz_button_callback = QUIZ_INCOMP_BUTTON_CALLBACK
+
+    markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+            ])
     
     return (text, markup)
 
