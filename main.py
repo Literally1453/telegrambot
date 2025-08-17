@@ -229,20 +229,20 @@ PERSON_DICT = {
 
 #Dictionary of answers
 ANS_DICT = {
-    0: "Pencil",
-    1: "Knife",
-    2: "Ruler",
+    0: "Measuring Tape",
+    1: "Ruler",
+    2: "Yardstick",
     3: "Gun",
-    4: "Pen",
-    5: "Scissors",
-    6: "Rope",
-    7: "School",
-    8: "Cave",
+    4: "Magic Wand",
+    5: "Rulebook",
+    6: "Set Square",
+    7: "Food Lab",
+    8: "Cafeteria",
     9: "Kitchen",
-    10: "Toilet",
-    11: "Library",
-    12: "Swimming Pool",
-    13: "Laboratory",
+    10: "Library",
+    11: "Restaurant",
+    12: "Cafe",
+    13: "Swimming Pool",
     14: "Malcolm",
     15: "Raph",
     16: "An Wen",
@@ -254,7 +254,7 @@ ANS_DICT = {
 
 FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
 
-# Pre-assign menu text
+# menu text
 START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @SMUXploration Crew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
 MAIN_MENU = 'This is the main menu\. Click on "View Board" to start\!'
 BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\n To begin, press on a task\."
@@ -303,36 +303,20 @@ YES_BUTTON_CALLBACK = "final_y"
 NO_BUTTON = "What mystery?"
 NO_BUTTON_CALLBACK = "final_n"
 
-#Finale Button
-FINALE_BUTTON = "Go Back To Main Menu"
-FINALE_BUTTON_CALLBACK = 'menu_finale'
-
 #Confirmation (of final answers) Button
 CONFIRM_BUTTON = "Yes"
 CONFIRM_BUTTON_CALLBACK = "final_confirm"
 REDO_BUTTON = "No (Retry)"
 
+#Finale Button
+FINALE_BUTTON = "Go Back To Main Menu"
+FINALE_BUTTON_CALLBACK = 'menu_finale'
+
+
+
 
 ####################################### CONSTANT MARKUPS ################################################
 
-MAIN_MENU_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-    [InlineKeyboardButton(QUIZ_INCOMP_BUTTON, callback_data=QUIZ_INCOMP_BUTTON_CALLBACK), 
-    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-])
-MAIN_MENU_COMP_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-    [InlineKeyboardButton(QUIZ_COMP_BUTTON, callback_data=QUIZ_COMP_BUTTON_CALLBACK), 
-    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-])
-MAIN_MENU_FIN_MARKUP = InlineKeyboardMarkup([
-    [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-    InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-    [InlineKeyboardButton(QUIZ_FIN_BUTTON, callback_data=QUIZ_FIN_BUTTON_CALLBACK), 
-    InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-]) 
 READY_MENU_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(YES_BUTTON, callback_data=YES_BUTTON_CALLBACK)],
     [InlineKeyboardButton(NO_BUTTON, callback_data=NO_BUTTON_CALLBACK)]
@@ -385,6 +369,28 @@ def get_object_num(task_id: int) -> int:
     else:
         person_num = 2
     return person_num
+
+def generate_main_menu(user_id) -> tuple:
+    completed_tasks = get_completed_task_ids(user_id)
+    text = MAIN_MENU
+    markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+            ])
+    if has_bingo(completed_tasks) and len(completed_tasks) == 16:
+        text = FINALE_MENU
+        quiz_button = QUIZ_FIN_BUTTON
+        quiz_button_callback = QUIZ_FIN_BUTTON_CALLBACK
+    elif has_bingo(completed_tasks):
+        quiz_button = QUIZ_COMP_BUTTON
+        quiz_button_callback = QUIZ_COMP_BUTTON_CALLBACK
+    else:
+        quiz_button = QUIZ_INCOMP_BUTTON
+        quiz_button_callback = QUIZ_INCOMP_BUTTON_CALLBACK
+    
+    return (text, markup)
 
 def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     """
@@ -466,7 +472,7 @@ def enable_if_in_state(state):
                 elif current_state == 'in_menu':
                     message = "Submit your proof of completion in the respective task page on the bingo board"
                 elif current_state == 'taking_quiz' and state == "submitting_task":
-                    message = "Why are you uploading media in the middle of an exam"
+                    message = "Why are you uploading media in the middle of an exam?"
 
                 if update.message:
                         await update.message.reply_text(message)
@@ -521,7 +527,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f'User ({user_id}) @({chatinfo['username']}) in {message_type}: "{text}"')
 
     #Initializing context variables
-    context.user_data['completed_bingo'] = False #Sets as false, main menu will display first version
     context.user_data['state'] = "in_menu" 
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
@@ -554,17 +559,11 @@ async def display_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @rate_limit()
 async def menu_command(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id #user_id of sender
-    completed_tasks = get_completed_task_ids(user_id)
-    markup = ""
-    if has_bingo(completed_tasks) and len(completed_tasks) == 16:
-        markup = MAIN_MENU_FIN_MARKUP
-    elif has_bingo(completed_tasks):
-        markup = MAIN_MENU_COMP_MARKUP
-    else:
-        markup = MAIN_MENU_MARKUP
+    text, markup = generate_main_menu(user_id)
+   
     await context.bot.send_message(
         update.message.from_user.id,
-        MAIN_MENU,
+        text,
         parse_mode = ParseMode.MARKDOWN_V2,
         reply_markup= markup
     )
@@ -652,8 +651,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
         text = "Select your deduced weapon:"
         markup = generate_question(1)
     elif data == "final_n": #prompts them to return to the main menu
-        text = MAIN_MENU
-        markup = MAIN_MENU_COMP_MARKUP
+        text, markup = generate_main_menu(user_id)
     elif data == "final_confirm": #if they confirm their submission of final answers
         text = "Deduction received\. You will be notified of the news when the investigation closes\. Thank you for solving the Magic Mystery\!"
         markup = FINALE_MARKUP
@@ -666,11 +664,11 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     else: # handles when the user is submitting their MCQ responses to the 3 questions
         ans_id = int(data.split("_")[1])
         if ans_id <= 6: #first answer:
-            context.user_data['quiz_answers'] += f"Weapon: {ANS_DICT[ans_id]},"
+            context.user_data['quiz_answers'] += f"Weapon: {ANS_DICT[ans_id]}, "
             text = "Select your deduced location:"
             markup = generate_question(2)
         elif ans_id > 6 and ans_id < 13: #second answer:
-            context.user_data['quiz_answers'] += f"Location: {ANS_DICT[ans_id]},"
+            context.user_data['quiz_answers'] += f"Location: {ANS_DICT[ans_id]}, "
             text = "Select your deduced Evil Wizard:"
             markup = generate_question(3)
         else: #third answer:
@@ -702,12 +700,8 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
 
     if data == MAIN_MENU_CALLBACK:
     # when user presses any button that leads back to the main menu
-        text = MAIN_MENU
         context.user_data['state'] = 'in_menu'
-        if context.user_data['completed_bingo']:
-            markup = MAIN_MENU_COMP_MARKUP
-        else:
-            markup = MAIN_MENU_MARKUP
+        text, markup = generate_main_menu(user_id)
     elif data == FAQ_BUTTON_CALLBACK:
     # when user presses "FAQ / queries button in the main menu"
         context.user_data['state'] = 'in_menu'
@@ -737,8 +731,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         text = QUIZ_FIN_MENU
         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
     elif data == FINALE_BUTTON_CALLBACK:
-        text = FINALE_MENU
-        markup = MAIN_MENU_MARKUP
+        text, markup = generate_main_menu(user_id)
     elif "bingo" in data:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
