@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request
 from datetime import datetime
 from contextlib import asynccontextmanager
 import time
-import asyncio
 import functools
 import psycopg2
 import os
@@ -665,15 +664,15 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     else: # handles when the user is submitting their MCQ responses to the 3 questions
         ans_id = int(data.split("_")[1])
         if ans_id <= 6: #first answer:
-            context.user_data['quiz_answers'] += f"Weapon: {ANS_DICT[ans_id]}, "
+            context.user_data['quiz_answers'] += f"\nWeapon: {ANS_DICT[ans_id]}, "
             text = "Select your deduced location:"
             markup = generate_question(2)
         elif ans_id > 6 and ans_id < 13: #second answer:
-            context.user_data['quiz_answers'] += f"Location: {ANS_DICT[ans_id]}, "
+            context.user_data['quiz_answers'] += f"\nLocation: {ANS_DICT[ans_id]}, "
             text = "Select your deduced Evil Wizard:"
             markup = generate_question(3)
         else: #third answer:
-            context.user_data['quiz_answers'] += f"Suspect: {ANS_DICT[ans_id]}"
+            context.user_data['quiz_answers'] += f"\nSuspect: {ANS_DICT[ans_id]}"
             text = f"You have given the following answers: {context.user_data['quiz_answers']}\. \nIs this your final answer?"
             markup = CONFIRMATION_MARKUP   
 
