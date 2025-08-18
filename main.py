@@ -713,8 +713,8 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     """
     This handler processes the inline buttons on the menu. Handles the main menu buttons, the bingo tiles buttons,
     and the task submission buttons
-
     """
+    
     data = update.callback_query.data # This is the callback_data for whatever button that was pressed
     user_id = update.callback_query.from_user.id
     print(data)
@@ -767,13 +767,22 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
             task_description += "\n\nIf you are ready to complete this task, press 'Submit'\!"
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(user_id,task_id)
+    try:
+        await update.callback_query.answer()
+        await update.callback_query.message.edit_text(
+            text,
+            parse_mode = ParseMode.MARKDOWN_V2,
+            reply_markup=markup,
+        )
+    except BadRequest as e:
+        await context.bot.send_message(
+            text,
+            parse_mode = ParseMode.MARKDOWN_V2,
+            reply_markup = markup
+        )
 
-    await update.callback_query.answer()
-    await update.callback_query.message.edit_text(
-        text,
-        parse_mode = ParseMode.MARKDOWN_V2,
-        reply_markup=markup,
-    )
+
+
 
 async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     """
