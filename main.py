@@ -201,6 +201,26 @@ TASK_DICT = {
     14: "*Any dive with SMUX Diving* \nTo complete this task, take a picture of you on the boat making a crown with your hands after a dive\!",
     15: "*Tandem Bike* \nTo complete this task, take a picture of you and your partner in any of the following poses:",
 }
+
+TITLE_DICT = {
+    0: "Pedal & Paddle",
+    1: "Charity Walk",
+    2: "Skate Clinic",
+    3: "Stationary Surfing",
+    4: "Longboard Clinic",
+    5: "Garden of Colours",
+    6: "Cable Board",
+    7: "Local Hike",
+    8: "Midnight Trek",
+    9: "KOP",
+    10: "PCN Rideout",
+    11: "Halloween Skate",
+    12: "PCN Rideout 2",
+    13: "Intertidal Walk",
+    14: "Any Dive",
+    15: "Tandem Bike",
+}
+
 #Dictionary of Hints
 HINT_DICT = {
     0: "_“I lurk where light forgets to tread, \nHalf in shadow, half in thread\.”_",
@@ -415,7 +435,7 @@ def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
     grid.append(row)
     return InlineKeyboardMarkup(grid)
 
-def generate_task_page(task_id) -> InlineKeyboardMarkup:
+def generate_task_page(user_id,task_id) -> InlineKeyboardMarkup:
     grid = []
     row = []
     if task_id != 0:
@@ -428,7 +448,8 @@ def generate_task_page(task_id) -> InlineKeyboardMarkup:
     grid.append(row)
     row = []
     row.append(InlineKeyboardButton("Go Back",callback_data=BINGO_MENU_CALLBACK))
-    row.append(InlineKeyboardButton(SUBMIT_BUTTON,callback_data=SUBMISSION_CALLBACK))
+    if get_status_of_task(user_id,task_id) == False:
+        row.append(InlineKeyboardButton(SUBMIT_BUTTON,callback_data=SUBMISSION_CALLBACK))
     grid.append(row)
     return InlineKeyboardMarkup(grid)
 
@@ -514,7 +535,6 @@ def rate_limit(cooldown_seconds: int = 3, message: str = "Please wait a few seco
 
 
 ##################################  Commands  #################################
-#@enable_if_in_state("in_menu")
 @rate_limit(cooldown_seconds=3)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -540,7 +560,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @enable_if_in_state("in_menu")
 @rate_limit()
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(FAQ_TEXT)
+    await update.message.reply_text(text=FAQ_TEXT, parse_mode=ParseMode.MARKDOWN_V2)
 
 @enable_if_in_state("in_menu")
 @rate_limit()
@@ -609,7 +629,7 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton(REJECT_BUTTON, callback_data=f"reject:{user_id}:{username}:{task_id}"),
         ]]
 
-    caption = "@" + clean_username_input(username) + " completing Task " + str(task_id+1) + " Approve or reject"
+    caption = f"@{clean_username_input(username)} is completing Task {str(task_id+1)}: {TITLE_DICT[task_id]}"
     if file_id and file_name and is_valid(file_name):
         print("passed true")
         if file_type == 'photo':
@@ -654,6 +674,8 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     elif data == "final_n": #prompts them to return to the main menu
         text, markup = generate_main_menu(user_id)
     elif data == "final_confirm": #if they confirm their submission of final answers
+        for i in range(16):
+            set_task_status(user_id,i,True)
         text = "Deduction received\. You will be notified of the news when the investigation closes\. Thank you for solving the Magic Mystery\!"
         markup = FINALE_MARKUP
         admin_caption += context.user_data['quiz_answers']
@@ -744,7 +766,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         else:
             task_description += "\n\nIf you are ready to complete this task, press 'Submit'\!"
         text = str(task_id+1) + ": " + task_description
-        markup = generate_task_page(task_id)
+        markup = generate_task_page(user_id,task_id)
 
     await update.callback_query.answer()
     await update.callback_query.message.edit_text(
@@ -799,7 +821,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         item = PERSON_DICT[get_object_num(task_id)]
         first_text = f"Well done in completing Activity {task_id+1}\! \nYou've earned the following clue to find the {item}: \n{HINT_DICT[task_id]}"
         set_task_status(user_id,task_id,True,)
-        admin_text =f"You approved @{clean_username_input(username)} task number {str(task_id+1)}" 
+        admin_text =f"You approved @{clean_username_input(username)}'s task {str(task_id+1)}: {TITLE_DICT[task_id]}" 
         completed_tasks = get_completed_task_ids(user_id)
         if len(completed_tasks) >= 4 and has_bingo(completed_tasks):
             completed = True
