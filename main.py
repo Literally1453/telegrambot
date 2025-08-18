@@ -663,7 +663,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     #variables to be sent in telegram messages either to the user or admin
     text = ''
     markup = None
-    admin_caption = username + " has given the following answers:\n"
+    admin_caption = f"@{username} has given the following answers:\n"
     
     #handles when the user finishes the bingo and is prompted if they wish to take the quiz now
     if data == "final_y": #generates first question
