@@ -275,8 +275,8 @@ ANS_DICT = {
 FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
 
 # menu text
-START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @SMUXploration Crew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
-MAIN_MENU = 'This is the main menu\. Click on "View Board" to start\!'
+START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
+MAIN_MENU = "This is the main menu\. If you haven't, please read the rules first\. Click on 'View Board' to start\!"
 BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\n To begin, press on a task\."
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
@@ -669,7 +669,7 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     if data == "final_y": #generates first question
         context.user_data['state'] = "taking_quiz"
         context.user_data['quiz_answers'] = ""
-        text = "Select your deduced weapon:"
+        text = "Which of the following is the Magical Item?"
         markup = generate_question(1)
     elif data == "final_n": #prompts them to return to the main menu
         text, markup = generate_main_menu(user_id)
@@ -687,15 +687,15 @@ async def handle_question(update: Update, context: CallbackContext) -> None:
     else: # handles when the user is submitting their MCQ responses to the 3 questions
         ans_id = int(data.split("_")[1])
         if ans_id <= 6: #first answer:
-            context.user_data['quiz_answers'] += f"\nWeapon: {ANS_DICT[ans_id]}, "
-            text = "Select your deduced location:"
+            context.user_data['quiz_answers'] += f"\nMagical Item: {ANS_DICT[ans_id]}, "
+            text = "Which of the following is the Secret Hideout?"
             markup = generate_question(2)
         elif ans_id > 6 and ans_id < 13: #second answer:
-            context.user_data['quiz_answers'] += f"\nLocation: {ANS_DICT[ans_id]}, "
-            text = "Select your deduced Evil Wizard:"
+            context.user_data['quiz_answers'] += f"\nSecret Hideout: {ANS_DICT[ans_id]}, "
+            text = "Finally, who is the Evil Wizard?"
             markup = generate_question(3)
         else: #third answer:
-            context.user_data['quiz_answers'] += f"\nSuspect: {ANS_DICT[ans_id]}"
+            context.user_data['quiz_answers'] += f"\nEvil Wizard: {ANS_DICT[ans_id]}"
             text = f"You have given the following answers: {context.user_data['quiz_answers']}\. \nIs this your final answer?"
             markup = CONFIRMATION_MARKUP   
 
@@ -775,6 +775,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
             reply_markup=markup,
         )
     except BadRequest as e:
+        print(f"{user_id}: Bad Request")
         await context.bot.send_message(
             text,
             parse_mode = ParseMode.MARKDOWN_V2,
@@ -794,7 +795,7 @@ async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
 
     task_list = get_user_tasks(user_id) #gets a list of the tasks with status (complete or not) from database
-    print(task_list)
+    print(f"{user_id}: {task_list}")
     text = BINGO_MENU
     markup = generate_bingo_board(task_list)
 
