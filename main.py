@@ -552,10 +552,15 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
+        print(f'User ({user_id}) @({chatinfo['username']}) is a new user')
+        await update.message.reply_text(
+            text = f"IMPORTANT: Please read before proceeding\!\n{RULES_MENU}",
+            parse_mode= ParseMode.MARKDOWN_V2
+        )
         for i in range(16):
             set_task_status(user_id,i,False)
 
-    await update.message.reply_photo(photo = "./programmer.png", caption = START_MENU, parse_mode=ParseMode.MARKDOWN_V2)
+    await update.message.reply_photo(photo = "./StartMenuPicture.jpg", caption = START_MENU, parse_mode=ParseMode.MARKDOWN_V2)
 
 @enable_if_in_state("in_menu")
 @rate_limit()
@@ -769,6 +774,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         markup = generate_task_page(user_id,task_id)
     
     await update.callback_query.answer()
+    print("answer")
     await update.callback_query.message.edit_text(
         text,
         parse_mode = ParseMode.MARKDOWN_V2,
