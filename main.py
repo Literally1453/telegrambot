@@ -273,14 +273,15 @@ ANS_DICT = {
 }
 
 FAQ_TEXT = textwrap.dedent("""
-                           Troubleshooting: If you press a button and nothing happens, type \/menu and navigate back to where you were\.\n
-                           
-                           Message @malfn19 for any other questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\.
-                           """)
+            1\. The Magic Council takes roughly 1 business day to approve your submissions\n
+            2\. Troubleshooting: If you press a button and nothing happens, type \/help and navigate back to where you were\n
+            3\. Message @malfn19 for any other questions \/ issues that you are facing\n
+            3a\.Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\.
+            """)
 
 # menu text
-START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
-MAIN_MENU = "This is the main menu\. If you haven't, please read the rules first\. Click on 'View Board' to start\!"
+START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram or Telegram and register yourself at the link in the bio\. Otherwise, type /menu\."
+MAIN_MENU = "This is the main menu\. If you haven't, please read the rules and the FAQ first\. Click on 'View Board' to start\!"
 BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\n To begin, press on a task\."
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
@@ -292,7 +293,15 @@ RULES_MENU = textwrap.dedent("""
             3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
             4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
             """)
-FINALE_MENU = "Wahoo you're done, good job and all, follow us on here here and here, and remember, it's just a theory, a GAME THEORY"
+FINALE_MENU = textwrap.dedent("""
+            Follow us on Instagram and Telegram @smuxplorationcrew to stay updated on the results of this challenge\.\n
+            We hope you enjoyed this virtual event as well as the SMUX events you participated in\!\n
+            *Credits:*\n
+            _Balqis \- Head of Magic Council_\n
+            _Germaine \- 2nd in Command_\n
+            _Malcolm \- Unpaid IT Intern_\n
+            _Telegram Bot API \- For making this possible_\n
+            """)
 
 #Main Menu Buttons
 
@@ -555,18 +564,13 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if is_existing_user(user_id) == False:
         print(f'User ({user_id}) @({chatinfo['username']}) is a new user')
         await update.message.reply_text(
-            text = f"IMPORTANT: Please read before proceeding\!\n{RULES_MENU}",
+            text = f"IMPORTANT: Please read before proceeding\!\nIf you have any queries, message @malfn19\nRules:\n{RULES_MENU}",
             parse_mode= ParseMode.MARKDOWN_V2
         )
         for i in range(16):
             set_task_status(user_id,i,False)
 
     await update.message.reply_photo(photo = "./StartMenuPicture.jpg", caption = START_MENU, parse_mode=ParseMode.MARKDOWN_V2)
-
-@enable_if_in_state("in_menu")
-@rate_limit()
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(text=FAQ_TEXT, parse_mode=ParseMode.MARKDOWN_V2)
 
 @enable_if_in_state("in_menu")
 @rate_limit()
@@ -596,6 +600,18 @@ async def menu_command(update: Update, context: CallbackContext) -> None:
         reply_markup= markup
     )
 
+@rate_limit()
+async def help_command(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id #user_id of sender
+    context.user_data['state'] = "in_menu"
+    text, markup = generate_main_menu(user_id)
+   
+    await context.bot.send_message(
+        update.message.from_user.id,
+        text,
+        parse_mode = ParseMode.MARKDOWN_V2,
+        reply_markup= markup
+    )
 
 ##################################  Handlers  #################################
 @enable_if_in_state("submitting_task")
