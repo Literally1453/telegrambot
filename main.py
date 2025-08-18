@@ -776,6 +776,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         except KeyError as e:
             print(f"{user_id}: KeyError task_id")
             await context.bot.send_message(
+                chat_id = user_id,
                 text="Sorry\! Looks like there was an error\. Type \/help and retry\.",
                 parse_mode=ParseMode.MARKDOWN_V2)
     elif data == QUIZ_COMP_BUTTON_CALLBACK:
