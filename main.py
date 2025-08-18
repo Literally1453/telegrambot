@@ -272,7 +272,11 @@ ANS_DICT = {
     20: "Mr Sunshine",
 }
 
-FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
+FAQ_TEXT = textwrap.dedent("""
+                           Troubleshooting: If you press a button and nothing happens, type \/menu and navigate back to where you were\.\n
+                           
+                           Message @malfn19 for any other questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\.
+                           """)
 
 # menu text
 START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram and register yourself at the link in the bio\. Otherwise, type /menu\."
@@ -547,9 +551,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chatinfo = await context.bot.getChat(user_id)
     print(f'User ({user_id}) @({chatinfo['username']}) in {message_type}: "{text}"')
 
-    #Initializing context variables
-    context.user_data['state'] = "in_menu" 
-
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
         print(f'User ({user_id}) @({chatinfo['username']}) is a new user')
@@ -585,6 +586,7 @@ async def display_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @rate_limit()
 async def menu_command(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id #user_id of sender
+    context.user_data['state'] = "in_menu"
     text, markup = generate_main_menu(user_id)
    
     await context.bot.send_message(
@@ -606,7 +608,14 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sender_chat_info = await context.bot.getChat(update.message.chat.id)
     user_id = update.effective_user.id #user_id of sender
     username = sender_chat_info['username']
-    task_id = context.user_data.get('task_id')    
+    try:
+        task_id = context.user_data.get('task_id')
+    except KeyError as e:
+        print(f"{user_id} experienced KeyError in handle_media")
+        await update.message.reply_text(
+            text = "Sorry, your session has expired\. Type \/menu to restart your session\.",
+            parse_mode = ParseMode.MARKDOWN_V2,
+            )
     file_id = None
     file_name = None
     file_type = None
@@ -624,7 +633,6 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif mime == "video/quicktime":
             file_name = "video.mov"
     elif update.message.document:
-        print("testing document")
         file_id = update.message.document.file_id
         file_name = update.message.document.file_name
         file_type = "document"
@@ -636,7 +644,6 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     caption = f"@{clean_username_input(username)} is completing Task {str(task_id+1)}: {TITLE_DICT[task_id]}"
     if file_id and file_name and is_valid(file_name):
-        print("passed true")
         if file_type == 'photo':
             await context.bot.send_photo(chat_id=admin_user_id, photo=file_id)
         elif file_type == 'video':
