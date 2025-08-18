@@ -276,32 +276,27 @@ FAQ_TEXT = textwrap.dedent("""
             1\. The Magic Council takes roughly 1 business day to approve your submissions\n
             2\. Troubleshooting: If you press a button and nothing happens, type \/help and navigate back to where you were\n
             3\. Message @malfn19 for any other questions \/ issues that you are facing\n
-            3a\.Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\.
+            3a\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\.
             """)
 
 # menu text
 START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram or Telegram and register yourself at the link in the bio\. Otherwise, type /menu\."
 MAIN_MENU = "This is the main menu\. If you haven't, please read the rules and the FAQ first\. Click on 'View Board' to start\!"
-BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\n To begin, press on a task\."
+BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\nTo begin, press on a task\."
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
 QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
 QUIZ_FIN_MENU = "You've solved the Magic Mystery\! We hope you weren't intending on changing your answers because like a project due at 2359, all submissions are final\."
 RULES_MENU = textwrap.dedent("""
             1\. Safety first\! Submissions displaying unsafe practices to yourself or others or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require will be rejected\. \n 
-            2\. Submissions must be done while participating in a SMUX activity\. \n 
-            3\. Please do not upload viruses or malware as I have zero file sanitation security\. \n 
-            4\. If you want to instantly win this challenge, paynow $100 to 90967606\.
+            1a\. Please follow the safety rules of the EXCOs running the events first\. For example, if holding a phone while performing the activity is risky, ask a friend to snap the photo or video for you instead\!\n 
+            3\. Submissions must be done while participating in a SMUX activity\. \n 
             """)
 FINALE_MENU = textwrap.dedent("""
             Follow us on Instagram and Telegram @smuxplorationcrew to stay updated on the results of this challenge\.\n
             We hope you enjoyed this virtual event as well as the SMUX events you participated in\!\n
-            *Credits:*\n
-            _Balqis \- Head of Magic Council_\n
-            _Germaine \- 2nd in Command_\n
-            _Malcolm \- Unpaid IT Intern_\n
-            _Telegram Bot API \- For making this possible_\n
             """)
+CREDITS_MENU = "*Credits:*\n_Balqis \- Head of Magic Council_\n_Germaine \- 2nd in Command_\n_Malcolm \- Unpaid IT Intern_\n_Telegram Bot API \- For making this possible_"
 
 #Main Menu Buttons
 
@@ -345,6 +340,9 @@ REDO_BUTTON = "No (Retry)"
 FINALE_BUTTON = "Go Back To Main Menu"
 FINALE_BUTTON_CALLBACK = 'menu_finale'
 
+#Credits Button
+CREDITS_BUTTON = "Credits"
+CREDITS_BUTTON_CALLBACK = 'menu_credits'
 
 
 
@@ -360,6 +358,7 @@ CONFIRMATION_MARKUP = InlineKeyboardMarkup([
 FINALE_MARKUP = InlineKeyboardMarkup([
     [InlineKeyboardButton(FINALE_BUTTON, callback_data=FINALE_BUTTON_CALLBACK)]
 ]) 
+BACK_MARKUP = InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
 
 #####################################  Functions  #################################
 def has_bingo(completed_task_ids: set[int]) -> bool:
@@ -406,10 +405,19 @@ def get_object_num(task_id: int) -> int:
 def generate_main_menu(user_id) -> tuple:
     completed_tasks = get_completed_task_ids(user_id)
     text = MAIN_MENU
+    quiz_button = ""
+    quiz_button_callback = ""
+    markup_list = [
+                [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
+                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
+                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+            ]
     if has_bingo(completed_tasks) and len(completed_tasks) == 16:
         text = FINALE_MENU
         quiz_button = QUIZ_FIN_BUTTON
         quiz_button_callback = QUIZ_FIN_BUTTON_CALLBACK
+        markup_list.append([InlineKeyboardButton(CREDITS_BUTTON,callback_data=CREDITS_BUTTON_CALLBACK)])
     elif has_bingo(completed_tasks):
         quiz_button = QUIZ_COMP_BUTTON
         quiz_button_callback = QUIZ_COMP_BUTTON_CALLBACK
@@ -417,13 +425,7 @@ def generate_main_menu(user_id) -> tuple:
         quiz_button = QUIZ_INCOMP_BUTTON
         quiz_button_callback = QUIZ_INCOMP_BUTTON_CALLBACK
 
-    markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
-                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
-            ])
-    
+    markup = InlineKeyboardMarkup(markup_list)
     return (text, markup)
 
 def generate_bingo_board(activity_list) -> InlineKeyboardMarkup:
@@ -564,7 +566,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if is_existing_user(user_id) == False:
         print(f'User ({user_id}) @({chatinfo['username']}) is a new user')
         await update.message.reply_text(
-            text = f"IMPORTANT: Please read before proceeding\!\nIf you have any queries, message @malfn19\nRules:\n{RULES_MENU}",
+            text = f"*IMPORTANT: Please read before proceeding\!*\nIf you have any queries, message @malfn19\nRules:\n{RULES_MENU}",
             parse_mode= ParseMode.MARKDOWN_V2
         )
         for i in range(16):
@@ -745,7 +747,6 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     
     data = update.callback_query.data # This is the callback_data for whatever button that was pressed
     user_id = update.callback_query.from_user.id
-    print(data)
     text = ''
     markup = None
 
@@ -757,12 +758,12 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     # when user presses "FAQ / queries button in the main menu"
         context.user_data['state'] = 'in_menu'
         text = FAQ_TEXT
-        markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+        markup =  BACK_MARKUP
     elif data == RULES_BUTTON_CALLBACK:
     # when user presses "View Rules" button in the main menu
         context.user_data['state'] = 'in_menu'
         text = RULES_MENU
-        markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+        markup =  BACK_MARKUP
     elif data == SUBMISSION_CALLBACK:
     # when user clicks on "Submit for Completion" button in the individual task page
         context.user_data['state'] = "submitting_task"
@@ -776,13 +777,16 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     elif data == QUIZ_INCOMP_BUTTON_CALLBACK:
     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
         text = QUIZ_INCOMP_MENU
-        markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+        markup = BACK_MARKUP
     elif data == QUIZ_FIN_BUTTON_CALLBACK:
     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
         text = QUIZ_FIN_MENU
-        markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+        markup = BACK_MARKUP
     elif data == FINALE_BUTTON_CALLBACK:
         text, markup = generate_main_menu(user_id)
+    elif data == CREDITS_BUTTON_CALLBACK:
+        text = CREDITS_MENU
+        markup = BACK_MARKUP
     elif "bingo" in data:
     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
         task_id = int(data.split("_")[1])
@@ -797,7 +801,6 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
         markup = generate_task_page(user_id,task_id)
     
     await update.callback_query.answer()
-    print("answer")
     await update.callback_query.message.edit_text(
         text,
         parse_mode = ParseMode.MARKDOWN_V2,
@@ -910,7 +913,6 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     completed = False
     query = update.callback_query
-    print(query)  
     await query.answer()  
 
     data = query.data  # e.g. "approve:123456789:username:<task_id>"
