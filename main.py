@@ -405,26 +405,28 @@ def get_object_num(task_id: int) -> int:
 def generate_main_menu(user_id) -> tuple:
     completed_tasks = get_completed_task_ids(user_id)
     text = MAIN_MENU
-    quiz_button = ""
-    quiz_button_callback = ""
     markup_list = [
                 [InlineKeyboardButton(BINGO_MENU_BUTTON, callback_data=BINGO_MENU_CALLBACK), 
-                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),],
-                [InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
-                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK),]
+                InlineKeyboardButton(RULES_BUTTON, callback_data=RULES_BUTTON_CALLBACK),]
             ]
     if has_bingo(completed_tasks) and len(completed_tasks) == 16:
         text = FINALE_MENU
         quiz_button = QUIZ_FIN_BUTTON
         quiz_button_callback = QUIZ_FIN_BUTTON_CALLBACK
+        markup_list.append([InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK)])
         markup_list.append([InlineKeyboardButton(CREDITS_BUTTON,callback_data=CREDITS_BUTTON_CALLBACK)])
     elif has_bingo(completed_tasks):
         quiz_button = QUIZ_COMP_BUTTON
         quiz_button_callback = QUIZ_COMP_BUTTON_CALLBACK
+        markup_list.append([InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK)])
     else:
         quiz_button = QUIZ_INCOMP_BUTTON
         quiz_button_callback = QUIZ_INCOMP_BUTTON_CALLBACK
-
+        markup_list.append([InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
+                InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK)])
+    
     markup = InlineKeyboardMarkup(markup_list)
     return (text, markup)
 
@@ -767,9 +769,15 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
     elif data == SUBMISSION_CALLBACK:
     # when user clicks on "Submit for Completion" button in the individual task page
         context.user_data['state'] = "submitting_task"
-        task_id = context.user_data['task_id']
-        text = SUBMISSION_MENU
-        markup = generate_submission_page(task_id)
+        try:
+            task_id = context.user_data['task_id']
+            text = SUBMISSION_MENU
+            markup = generate_submission_page(task_id)
+        except KeyError as e:
+            print(f"{user_id}: KeyError task_id")
+            await update.message.reply_text(
+                text="Sorry\! Looks like there was an error\. Type \/help and retry\.",
+                parse_mode=ParseMode.MARKDOWN_V2)
     elif data == QUIZ_COMP_BUTTON_CALLBACK:
     # when user clicks on "Solve Mystery" button in the main menu (after bingo has been achieved)
         text = QUIZ_COMP_MENU
