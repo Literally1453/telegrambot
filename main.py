@@ -767,21 +767,86 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
             task_description += "\n\nIf you are ready to complete this task, press 'Submit'\!"
         text = str(task_id+1) + ": " + task_description
         markup = generate_task_page(user_id,task_id)
-    try:
-        await update.callback_query.answer()
-        await update.callback_query.message.edit_text(
-            text,
-            parse_mode = ParseMode.MARKDOWN_V2,
-            reply_markup=markup,
-        )
-    except BadRequest as e:
-        print(f"{user_id}: Bad Request")
-        await context.bot.send_message(
-            text,
-            parse_mode = ParseMode.MARKDOWN_V2,
-            reply_markup = markup
-        )
+    
+    await update.callback_query.answer()
+    await update.callback_query.message.edit_text(
+        text,
+        parse_mode = ParseMode.MARKDOWN_V2,
+        reply_markup=markup,
+    )
+    
+# async def button_tap(update: Update, context: CallbackContext) -> None:
+#     """
+#     This handler processes the inline buttons on the menu. Handles the main menu buttons, the bingo tiles buttons,
+#     and the task submission buttons
+#     """
+    
+#     data = update.callback_query.data # This is the callback_data for whatever button that was pressed
+#     user_id = update.callback_query.from_user.id
+#     print(data)
+#     text = ''
+#     markup = None
 
+#     if data == MAIN_MENU_CALLBACK:
+#     # when user presses any button that leads back to the main menu
+#         context.user_data['state'] = 'in_menu'
+#         text, markup = generate_main_menu(user_id)
+#     elif data == FAQ_BUTTON_CALLBACK:
+#     # when user presses "FAQ / queries button in the main menu"
+#         context.user_data['state'] = 'in_menu'
+#         text = FAQ_TEXT
+#         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+#     elif data == RULES_BUTTON_CALLBACK:
+#     # when user presses "View Rules" button in the main menu
+#         context.user_data['state'] = 'in_menu'
+#         text = RULES_MENU
+#         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+#     elif data == SUBMISSION_CALLBACK:
+#     # when user clicks on "Submit for Completion" button in the individual task page
+#         context.user_data['state'] = "submitting_task"
+#         task_id = context.user_data['task_id']
+#         text = SUBMISSION_MENU
+#         markup = generate_submission_page(task_id)
+#     elif data == QUIZ_COMP_BUTTON_CALLBACK:
+#     # when user clicks on "Solve Mystery" button in the main menu (after bingo has been achieved)
+#         text = QUIZ_COMP_MENU
+#         markup = READY_MENU_MARKUP
+#     elif data == QUIZ_INCOMP_BUTTON_CALLBACK:
+#     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
+#         text = QUIZ_INCOMP_MENU
+#         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+#     elif data == QUIZ_FIN_BUTTON_CALLBACK:
+#     # when user clicks on "Hidden" button in the main menu (before bingo has been achieved)
+#         text = QUIZ_FIN_MENU
+#         markup =  InlineKeyboardMarkup([[InlineKeyboardButton(text = "Back", callback_data=MAIN_MENU_CALLBACK)]])
+#     elif data == FINALE_BUTTON_CALLBACK:
+#         text, markup = generate_main_menu(user_id)
+#     elif "bingo" in data:
+#     # when user clicks on any of the 'bingo tiles' buttons in the bingo menu
+#         task_id = int(data.split("_")[1])
+#         context.user_data['task_id'] = task_id
+#         task_description = TASK_DICT[task_id]
+#         if get_status_of_task(user_id,task_id):
+#             item = PERSON_DICT[get_object_num(task_id)]
+#             task_description += f"\n\nYou have completed this task\. The hint to find the {item} is: \n {HINT_DICT[task_id]}"
+#         else:
+#             task_description += "\n\nIf you are ready to complete this task, press 'Submit'\!"
+#         text = str(task_id+1) + ": " + task_description
+#         markup = generate_task_page(user_id,task_id)
+#     try:
+#         await update.callback_query.answer()
+#         await update.callback_query.message.edit_text(
+#             text,
+#             parse_mode = ParseMode.MARKDOWN_V2,
+#             reply_markup=markup,
+#         )
+#     except BadRequest as e:
+#         print(f"{user_id}: Bad Request")
+#         await context.bot.send_message(
+#             text,
+#             parse_mode = ParseMode.MARKDOWN_V2,
+#             reply_markup = markup
+#         )
 
 
 
