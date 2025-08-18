@@ -263,13 +263,13 @@ ANS_DICT = {
     11: "Restaurant",
     12: "Cafe",
     13: "Swimming Pool",
-    14: "Malcolm",
-    15: "Raph",
-    16: "An Wen",
-    17: "Balqis",
-    18: "Yang Ling",
-    19: "Nadra",
-    20: "Chris",
+    14: "Mr Yin",
+    15: "Ms Chili",
+    16: "Mr Pool",
+    17: "Ms Matcha",
+    18: "Mr Yang",
+    19: "Ms Flamingo",
+    20: "Mr Sunshine",
 }
 
 FAQ_TEXT = "Message @malfn19 for any questions \/ issues that you are facing\. Technical issues only please, I am unable to solve your personal, academic or emotional issues although I wish you the best in dealing with them\."
