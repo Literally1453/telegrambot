@@ -775,7 +775,7 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
             markup = generate_submission_page(task_id)
         except KeyError as e:
             print(f"{user_id}: KeyError task_id")
-            await update.message.reply_text(
+            await context.bot.send_message(
                 text="Sorry\! Looks like there was an error\. Type \/help and retry\.",
                 parse_mode=ParseMode.MARKDOWN_V2)
     elif data == QUIZ_COMP_BUTTON_CALLBACK:
