@@ -862,7 +862,6 @@ async def button_tap(update: Update, context: CallbackContext) -> None:
 #         )
 
 
-
 async def handle_bingo_board(update: Update, context: CallbackContext) -> None:
     """
     Triggers when a bingo_board is called to be generated. Takes the requesting user_id and calls get_user_tasks
