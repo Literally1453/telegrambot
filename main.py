@@ -282,17 +282,19 @@ FAQ_TEXT = textwrap.dedent("""
 # menu text
 START_MENU = "Welcome to SMUX’s Virtual Challenge: Magic Mystery\. You should have already registered yourself with the Magic Council \- if you have not done so already, please head to @smuxplorationcrew on Instagram or Telegram and register yourself at the link in the bio\. Otherwise, type /menu\."
 MAIN_MENU = "This is the main menu\. If you haven't, please read the rules and the FAQ first\. Click on 'View Board' to start\!"
+MAIN_COMP_MENU = "This is the main menu\. If you haven't, please read the rules and the FAQ first\. Click on 'View Board' to start\!\nWhen you want to attempt the final quiz, click on 'Solve Mystery'\. Good luck\!"
 BINGO_MENU = "Your quest begins here\. To uncover the identity of the Evil Wizard, you must first complete the tasks below\. Remember, there is no guarantee that the BINGO line you’ve completed will contain all the hints that you will need to reveal the truth that you desire\. Take all the time you need, but you’re racing against time\. \n\nTo begin, press on a task\."
 SUBMISSION_MENU = "You may now upload your submission\. You can upload it as a photo, video or document\."
-QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the magic mystery?"
+QUIZ_COMP_MENU = "You completed the bingo\! Are you ready to solve the Magic Mystery? No turning back once it's begun\!"
 QUIZ_INCOMP_MENU = "It seems like you haven't completed enough tasks\! Come back here when you're ready\."
 QUIZ_FIN_MENU = "You've solved the Magic Mystery\! We hope you weren't intending on changing your answers because like a project due at 2359, all submissions are final\."
 RULES_MENU = textwrap.dedent("""
-            1\. Safety first\! Submissions displaying unsafe practices to yourself or others or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require will be rejected\. \n 
-            1a\. Please follow the safety rules of the EXCOs running the events first\. For example, if holding a phone while performing the activity is risky, ask a friend to snap the photo or video for you instead\!\n 
+            1\. Safety first\! Submissions displaying unsafe practices to yourself or others, or a lack of donning proper safety equipment \(e\.g\. helmet, guards\) that the activity would require will be rejected\. \n 
+            1a\. Please also follow the safety rules of the EXCOs running the events\. For example, if holding a phone while performing the activity is risky, ask a friend to snap the photo or video for you instead\!\n 
             3\. Submissions must be done while participating in a SMUX activity\. \n 
             """)
 FINALE_MENU = textwrap.dedent("""
+            Thank you for your participation in SMUX's Virtual Challenge: Magic Mystery\!\n
             Follow us on Instagram and Telegram @smuxplorationcrew to stay updated on the results of this challenge\.\n
             We hope you enjoyed this virtual event as well as the SMUX events you participated in\!\n
             """)
@@ -417,6 +419,7 @@ def generate_main_menu(user_id) -> tuple:
                 InlineKeyboardButton(FAQ_BUTTON, callback_data=FAQ_BUTTON_CALLBACK)])
         markup_list.append([InlineKeyboardButton(CREDITS_BUTTON,callback_data=CREDITS_BUTTON_CALLBACK)])
     elif has_bingo(completed_tasks):
+        text = MAIN_COMP_MENU
         quiz_button = QUIZ_COMP_BUTTON
         quiz_button_callback = QUIZ_COMP_BUTTON_CALLBACK
         markup_list.append([InlineKeyboardButton(quiz_button, callback_data=quiz_button_callback), 
@@ -478,7 +481,7 @@ def generate_submission_page(task_id) -> InlineKeyboardMarkup:
     
     return InlineKeyboardMarkup([grid])
 
-def generate_question_callback(question_id) -> InlineKeyboardButton:
+def generate_question_button(question_id) -> InlineKeyboardButton:
     callback_data = "ans_" + str(question_id)
 
     return InlineKeyboardButton(ANS_DICT[question_id],callback_data=callback_data)
@@ -486,7 +489,7 @@ def generate_question_callback(question_id) -> InlineKeyboardButton:
 def generate_question(question_num) -> InlineKeyboardMarkup:
     grid = []
     for i in range(7):
-        grid.append([generate_question_callback(7 * question_num - (7 - i))])
+        grid.append([generate_question_button(7 * question_num - (7 - i))])
         
     return InlineKeyboardMarkup(grid)
 
