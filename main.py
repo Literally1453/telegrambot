@@ -225,7 +225,7 @@ TITLE_DICT = {
 HINT_DICT = {
     0: "_“I lurk where light forgets to tread, \nHalf in shadow, half in thread\.”_",
     1: "_“I am a workshop with no nails, \nA lab where mouths submit their trials\.”_",
-    2: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks \— neat witnesses of choice\.”_",
+    2: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks — neat witnesses of choice\.”_",
     3: "_“I slip through cracks to sip your tales, \nFollow whispers, ride the gales\.”_",
     4: "_“I’m dressed in storms from head to toe, \nA curious tide with nowhere to go\.”_",
     5: "_“I tame wild heat with lids and flame, \nTurn salt to gold and scraps to fame\.”_",
@@ -238,7 +238,7 @@ HINT_DICT = {
     12: "_“Follow whispers, ride the gales\.”_",
     13: "_“Follow whispers, ride the gales\.”_",
     14: "_“I tame wild heat with lids and flame, \nTurn salt to gold and scraps to fame\.”_",
-    15: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks \— neat witnesses of choice\.”_",
+    15: "_“I hold court with no tribunal, issue edicts with no voice, \nMy scepters are a row of marks — neat witnesses of choice\.”_",
 }
 
 PERSON_DICT = {
@@ -330,7 +330,7 @@ REJECT_BUTTON = "Reject"
 #Solving Mystery Button
 YES_BUTTON = "Yes, I'm ready"
 YES_BUTTON_CALLBACK = "final_y"
-NO_BUTTON = "What mystery?"
+NO_BUTTON = "I need more time!"
 NO_BUTTON_CALLBACK = "final_n"
 
 #Confirmation (of final answers) Button
