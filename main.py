@@ -567,6 +567,9 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chatinfo = await context.bot.getChat(user_id)
     print(f'User ({user_id}) @({chatinfo['username']}) in {message_type}: "{text}"')
 
+    #Init context variable
+    context.user_data['state'] = "in_menu"
+
     #Generates the database rows of task ids for that user if they are new. Does not execute if they are an existing user
     if is_existing_user(user_id) == False:
         print(f'User ({user_id}) @({chatinfo['username']}) is a new user')
